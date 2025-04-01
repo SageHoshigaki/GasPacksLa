@@ -83,7 +83,7 @@ const LandingPage = () => {
         <div className="navbar-brand">
           <a
             className="navbar-item"
-            href="#"
+            href="/"
             style={{ fontFamily: 'Cherry Bomb One, cursive', fontSize: '2.75rem', color: '#fff' }}
           >
             GasPacks
@@ -92,10 +92,10 @@ const LandingPage = () => {
 
         <div className="navbar-menu">
           <div className="navbar-end">
-            <a className="navbar-item has-text-white">Shop</a>
-            <a className="navbar-item has-text-white">Locator</a>
-            <a className="navbar-item has-text-white">Catalog</a>
-            <a className="navbar-item has-text-white">Order Online</a>
+            <a href="/shop" className="navbar-item has-text-white">Shop</a>
+            <a href="/locator" className="navbar-item has-text-white">Locator</a>
+            <a href="/catalog" className="navbar-item has-text-white">Catalog</a>
+            <a href="/order-online" className="navbar-item has-text-white">Order Online</a>
           </div>
         </div>
       </nav>
@@ -119,17 +119,23 @@ const LandingPage = () => {
       <section className="section is-large">
         <div className="container">
           <div className="columns is-vcentered">
-            <div className="column is-full has-text-centered">
+            <div className="column is-half has-text-centered">
               <h2 className="title is-3 main-headers has-text-white">Coming Soon</h2>
               <p className="subtitle is-5 has-text-white">
-                Get ready to tap into the full GasPacks experience:locate exclusive distributors near you, unlock access to private events, and be first in line for major collab drops.
+                Get ready to tap into the full GasPacks experience: locate exclusive distributors near you, unlock access to private events, and be first in line for major collab drops.
               </p>
               <p className="subtitle is-5 has-text-white">
                 It’s more than a product — it’s a lifestyle. A culture. A movement.
               </p>
               <button className="button is-link is-medium">Notify Me</button>
             </div>
-         
+            <div className="column is-half">
+              <img
+                src="/images/now-hiring.jpg"
+                alt="Feature Preview"
+                style={{ width: '100%', borderRadius: '12px' }}
+              />
+            </div>
           </div>
         </div>
       </section>
