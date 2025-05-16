@@ -1,0 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Roboto&display=swap");
+
+body {
+  font-family: "Roboto", sans-serif;
+}
+
+@keyframes jump {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.jump {
+  animation: jump 0.8s ease-in-out infinite;
+}
+
+.load-icon {
+  font-size: 80px !important;
+}
+
+.consent-logo,
+.main-headers {
+  margin-bottom: 42px !important;
+}
