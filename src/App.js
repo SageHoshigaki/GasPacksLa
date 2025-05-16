@@ -1,7 +1,7 @@
 import "./css/App.css";
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { SignIn, SignUp, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { SignIn, SignUp } from "@clerk/clerk-react";
 
 import LandingPage from "./components/Landing";
 import IDUploadPage from "./components/IdUpload";

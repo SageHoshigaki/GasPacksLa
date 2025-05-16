@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "../css/Multiform.css";
 import "animate.css/animate.min.css";
 import { motion } from "framer-motion";
