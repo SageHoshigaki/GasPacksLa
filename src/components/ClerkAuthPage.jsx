@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { SignIn, SignUp } from "@clerk/clerk-react";
+import SyncUser from "./SyncUser";
 
 const ClerkAuthPage = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -60,7 +61,9 @@ const ClerkAuthPage = () => {
           }}
         />
       )}
+     <SyncUser/>
     </div>
+
   );
 };
 
