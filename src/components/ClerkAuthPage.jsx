@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { SignIn, SignUp } from "@clerk/clerk-react";
+import { SignIn, SignUp, useUser } from "@clerk/clerk-react";
 import SyncUser from "./SyncUser";
 
 const ClerkAuthPage = () => {
   const [isSignIn, setIsSignIn] = useState(true);
+  const { isSignedIn } = useUser();
 
   return (
     <div style={{ minHeight: "100vh", background: "#f9f9f9" }}>
@@ -61,9 +62,10 @@ const ClerkAuthPage = () => {
           }}
         />
       )}
-     <SyncUser/>
-    </div>
 
+      {/* ✅ Only run SyncUser once someone is signed in */}
+      {isSignedIn && <SyncUser />}
+    </div>
   );
 };
 
