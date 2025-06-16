@@ -63,7 +63,7 @@ const ClerkAuthPage = () => {
         />
       )}
 
-      {/* ✅ Only run SyncUser once someone is signed in */}
+      {/* Sync user only if signed in */}
       {isSignedIn && <SyncUser />}
     </div>
   );
