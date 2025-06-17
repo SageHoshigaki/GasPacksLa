@@ -1,6 +1,5 @@
 const { createClient } = require("@supabase/supabase-js");
 
-// 🔐 Supabase client
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -9,9 +8,8 @@ const supabase = createClient(
 exports.handler = async (event) => {
   console.log("🟢 Webhook HIT");
 
-  // ✅ Ensure it's a POST request
   if (event.httpMethod !== "POST") {
-    console.warn("🚫 Method Not Allowed:", event.httpMethod);
+    console.warn("🚫 Invalid method:", event.httpMethod);
     return {
       statusCode: 405,
       body: JSON.stringify({ error: "Method Not Allowed" }),
@@ -23,11 +21,11 @@ exports.handler = async (event) => {
     console.log("📦 Payload:", payload);
 
     const user = payload.data;
+
     if (!user) {
-      console.warn("⚠️ No user object in payload");
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: "Missing user data" }),
+        body: JSON.stringify({ error: "Missing user object" }),
       };
     }
 
@@ -37,17 +35,15 @@ exports.handler = async (event) => {
     const status = "pending";
 
     if (!id || !email) {
-      console.warn("⚠️ Missing required fields");
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: "Missing user ID or email" }),
+        body: JSON.stringify({ error: "Missing required fields" }),
       };
     }
 
-    const { error } = await supabase.from("users").upsert(
-      { id, email, full_name, status },
-      { onConflict: "id" } // assuming `id` is your primary key
-    );
+    const { error } = await supabase
+      .from("users")
+      .upsert({ id, email, full_name, status }, { onConflict: "id" });
 
     if (error) {
       console.error("❌ Supabase error:", error);
@@ -57,7 +53,7 @@ exports.handler = async (event) => {
       };
     }
 
-    console.log("✅ User synced:", email);
+    console.log("✅ Synced user:", email);
     return {
       statusCode: 200,
       body: JSON.stringify({ success: true }),
