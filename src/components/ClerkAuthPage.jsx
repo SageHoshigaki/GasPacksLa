@@ -29,7 +29,8 @@ const ClerkAuthPage = () => {
 
       {isSignIn ? (
         <SignIn
-          routing="virtual"
+          path="/sign-in"
+          routing="path"
           forceRedirectUrl="/dashboard"
           fallbackRedirectUrl="/dashboard"
           appearance={{
@@ -48,7 +49,8 @@ const ClerkAuthPage = () => {
         />
       ) : (
         <SignUp
-          routing="virtual"
+          path="/sign-up"
+          routing="path"
           forceRedirectUrl="/form"
           fallbackRedirectUrl="/form"
           appearance={{
