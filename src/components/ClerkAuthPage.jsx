@@ -30,6 +30,7 @@ const ClerkAuthPage = () => {
       {isSignIn ? (
         <SignIn
           routing="virtual"
+          afterSignInUrl="/dashboard" // 👈 change this as needed
           appearance={{
             elements: {
               rootBox: {
@@ -47,6 +48,7 @@ const ClerkAuthPage = () => {
       ) : (
         <SignUp
           routing="virtual"
+          forceRedirectUrl="/form" // 👈 redirect new users to complete profile
           appearance={{
             elements: {
               rootBox: {
@@ -63,7 +65,6 @@ const ClerkAuthPage = () => {
         />
       )}
 
-      {/* Sync user only if signed in */}
       {isSignedIn && <SyncUser />}
     </div>
   );
