@@ -10,7 +10,6 @@ import Shop from "./components/Shop";
 import ProtectedShopRoute from "./components/ProtectedShopRoute";
 import NotAuthorized from "./components/NotAuthorized";
 import AdminUserPanel from "./components/AdminUserPanel";
-import ClerkWrapper from "./ClerkWrapper"; // 👈 Import this
 
 const clerkStyles = {
   rootBox: {
