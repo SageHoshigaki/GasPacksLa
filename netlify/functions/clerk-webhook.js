@@ -1,7 +1,4 @@
-import { Hono } from "hono";
-import { createClient } from "@supabase/supabase-js";
-
-const app = new Hono();
+const { createClient } = require("@supabase/supabase-js");
 
 // 🔐 Supabase client
 const supabase = createClient(
@@ -9,49 +6,67 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// ✅ Netlify invokes this function at: /.netlify/functions/clerk-webhook
-// So we match the internal route with "/"
-app.post("/", async (c) => {
+exports.handler = async (event) => {
   console.log("🟢 Webhook HIT");
 
+  // ✅ Ensure it's a POST request
+  if (event.httpMethod !== "POST") {
+    console.warn("🚫 Method Not Allowed:", event.httpMethod);
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: "Method Not Allowed" }),
+    };
+  }
+
   try {
-    const payload = await c.req.json();
+    const payload = JSON.parse(event.body);
     console.log("📦 Payload:", payload);
 
     const user = payload.data;
-
     if (!user) {
-      console.warn("⚠️ Missing user data");
-      return c.json({ success: false, error: "Missing user data" }, 400);
+      console.warn("⚠️ No user object in payload");
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing user data" }),
+      };
     }
 
     const id = user.id;
     const email = user.email_addresses?.[0]?.email_address || "";
     const full_name = `${user.first_name || ""} ${user.last_name || ""}`.trim();
-    const status = "pending"; // Default status — update if needed
-
-    console.log("🧬 Parsed:", { id, email, full_name });
+    const status = "pending";
 
     if (!id || !email) {
-      return c.json({ success: false, error: "Missing ID or email" }, 400);
+      console.warn("⚠️ Missing required fields");
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing user ID or email" }),
+      };
     }
 
     const { error } = await supabase.from("users").upsert(
       { id, email, full_name, status },
-      { onConflict: "id" } // assumes "id" is your Supabase primary key
+      { onConflict: "id" } // assuming `id` is your primary key
     );
 
     if (error) {
       console.error("❌ Supabase error:", error);
-      return c.json({ success: false, error: error.message }, 500);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: error.message }),
+      };
     }
 
     console.log("✅ User synced:", email);
-    return c.json({ success: true });
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true }),
+    };
   } catch (err) {
-    console.error("🔥 Webhook error:", err);
-    return c.json({ success: false, error: "Internal server error" }, 500);
+    console.error("🔥 Runtime error:", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Internal server error" }),
+    };
   }
-});
-
-export const handler = app.fetch;
+};
