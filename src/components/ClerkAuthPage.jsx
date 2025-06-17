@@ -30,7 +30,8 @@ const ClerkAuthPage = () => {
       {isSignIn ? (
         <SignIn
           routing="virtual"
-          redirectUrl="/dashboard" // 👈 Change as needed
+          forceRedirectUrl="/dashboard"
+          fallbackRedirectUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: {
@@ -48,7 +49,8 @@ const ClerkAuthPage = () => {
       ) : (
         <SignUp
           routing="virtual"
-          redirectUrl="/form" // 👈 Will go here after sign-up
+          forceRedirectUrl="/form"
+          fallbackRedirectUrl="/form"
           appearance={{
             elements: {
               rootBox: {
