@@ -6,3 +6,4 @@ node_bundler = "esbuild"
 from = "/api/clerk-webhook"
 to = "/.netlify/functions/clerk-webhook"
 status = 200
+# force deploy
