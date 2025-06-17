@@ -30,59 +30,57 @@ const clerkStyles = {
 function App() {
   return (
     <BrowserRouter>
-      <ClerkWrapper>
-        <Routes>
-          {/* PUBLIC ROUTES */}
-          <Route path="/admin" element={<AdminUserPanel />} />
-          <Route path="/" element={<LandingPage />} />
-          <Route
-            path="/sign-in"
-            element={
-              <SignIn
-                routing="virtual"
-                forceRedirectUrl="/dashboard"
-                fallbackRedirectUrl="/dashboard"
-                appearance={{ elements: clerkStyles }}
-              />
-            }
-          />
-          <Route
-            path="/sign-up"
-            element={
-              <SignUp
-                routing="virtual"
-                forceRedirectUrl="/form"
-                fallbackRedirectUrl="/form"
-                appearance={{ elements: clerkStyles }}
-              />
-            }
-          />
+      <Routes>
+        {/* PUBLIC ROUTES */}
+        <Route path="/admin" element={<AdminUserPanel />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/sign-in"
+          element={
+            <SignIn
+              routing="virtual"
+              forceRedirectUrl="/dashboard"
+              fallbackRedirectUrl="/dashboard"
+              appearance={{ elements: clerkStyles }}
+            />
+          }
+        />
+        <Route
+          path="/sign-up"
+          element={
+            <SignUp
+              routing="virtual"
+              forceRedirectUrl="/form"
+              fallbackRedirectUrl="/form"
+              appearance={{ elements: clerkStyles }}
+            />
+          }
+        />
 
-          {/* PROTECTED ROUTES */}
-          <Route path="/upload-id" element={<IDUploadPage />} />
-          <Route path="/form" element={<MultiStepForm />} />
-          <Route path="/account" element={<ClerkAccountPage />} />
-          <Route
-            path="/shop"
-            element={
-              <ProtectedShopRoute>
-                <Shop />
-              </ProtectedShopRoute>
-            }
-          />
-          <Route path="/not-authorized" element={<NotAuthorized />} />
+        {/* PROTECTED ROUTES */}
+        <Route path="/upload-id" element={<IDUploadPage />} />
+        <Route path="/form" element={<MultiStepForm />} />
+        <Route path="/account" element={<ClerkAccountPage />} />
+        <Route
+          path="/shop"
+          element={
+            <ProtectedShopRoute>
+              <Shop />
+            </ProtectedShopRoute>
+          }
+        />
+        <Route path="/not-authorized" element={<NotAuthorized />} />
 
-          {/* 404 */}
-          <Route
-            path="*"
-            element={
-              <div style={{ padding: "2rem" }}>
-                <h2>404 - Page not found</h2>
-              </div>
-            }
-          />
-        </Routes>
-      </ClerkWrapper>
+        {/* 404 */}
+        <Route
+          path="*"
+          element={
+            <div style={{ padding: "2rem" }}>
+              <h2>404 - Page not found</h2>
+            </div>
+          }
+        />
+      </Routes>
     </BrowserRouter>
   );
 }
