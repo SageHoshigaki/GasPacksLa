@@ -8,7 +8,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-app.post("/", async (c) => {
+// Match the deployed function route: /.netlify/functions/clerk-webhook
+app.post("/clerk-webhook", async (c) => {
   try {
     const payload = await c.req.json();
     const user = payload.data;
@@ -22,15 +23,9 @@ app.post("/", async (c) => {
       return c.json({ success: false, error: "Missing user ID or email" }, 400);
     }
 
-    const { error } = await supabase.from("users").upsert(
-      {
-        id,
-        email,
-        full_name,
-        status,
-      },
-      { onConflict: "id" } // ensures updates don't create duplicates
-    );
+    const { error } = await supabase
+      .from("users")
+      .upsert({ id, email, full_name, status }, { onConflict: "id" });
 
     if (error) {
       console.error("❌ Supabase error:", error);
