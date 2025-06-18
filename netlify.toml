@@ -1,4 +1,5 @@
 [functions]
+external_node_modules = ["multiparty", "jsonwebtoken"]
 directory = "netlify/functions"
 node_bundler = "esbuild"
 
