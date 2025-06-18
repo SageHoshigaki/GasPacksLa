@@ -33,7 +33,7 @@ const MultiStepForm = () => {
   const nextStep = () => {
     if (step === 1) {
       const {
-        firstName, lastName, dobDay, dobMonth, dobYear,
+        dobDay, dobMonth, dobYear,
         streetNumber, streetName, city, state, zip
       } = formData;
       if (!dobDay || !dobMonth || !dobYear || !streetNumber || !streetName || !city || !state || !zip) {
