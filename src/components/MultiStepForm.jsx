@@ -144,7 +144,7 @@ const MultiStepForm = () => {
             <p><strong>SSN:</strong> {formData.ssn}</p>
             <p><strong>Phone:</strong> {formData.phone}</p>
             <p><strong>Email:</strong> {formData.email}</p>
-            <p><strong>License Uploaded:</strong> {formData.licenseFile?.name}</p>
+           
           </div>
         );
       default:
