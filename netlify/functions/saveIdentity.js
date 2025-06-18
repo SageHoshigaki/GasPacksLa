@@ -23,8 +23,6 @@ exports.handler = async (event) => {
     const userId = decoded.sub;
 
     const {
-      firstName,
-      lastName,
       dobYear,
       dobMonth,
       dobDay,
@@ -39,8 +37,6 @@ exports.handler = async (event) => {
 
     const data = {
       user_id: userId,
-      first_name: firstName,
-      last_name: lastName,
       dob: `${dobYear}-${dobMonth}-${dobDay}`,
       address: `${streetNumber} ${streetName}, ${city}, ${state} ${zip}`,
       ssn,

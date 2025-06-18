@@ -98,16 +98,9 @@ const MultiStepForm = () => {
         return (
           <>
             <h2 className="title is-4 has-text-white">Personal Information</h2>
-            <p className="subtitle is-6 has-text-white">Please provide your name, date of birth, and address details.</p>
+            <p className="subtitle is-6 has-text-white">Please provide your date of birth, and address details.</p>
             <div className="columns">
-              <div className="column">
-                <label className="label has-text-white">First Name</label>
-                <input className="input" name="firstName" value={formData.firstName} onChange={handleChange} />
-              </div>
-              <div className="column">
-                <label className="label has-text-white">Last Name</label>
-                <input className="input" name="lastName" value={formData.lastName} onChange={handleChange} />
-              </div>
+            
             </div>
             <label className="label mt-4 has-text-white">Date of Birth</label>
             <div className="columns">
