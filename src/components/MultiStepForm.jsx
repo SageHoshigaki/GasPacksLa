@@ -108,19 +108,30 @@ const MultiStepForm = () => {
       case 1:
         return (
           <>
-            {/* First Step UI here (same as before) */}
+            <input name="firstName" placeholder="First Name" className="input mb-3" value={formData.firstName} onChange={handleChange} />
+            <input name="lastName" placeholder="Last Name" className="input mb-3" value={formData.lastName} onChange={handleChange} />
+            <input name="dobDay" placeholder="DOB Day" className="input mb-3" value={formData.dobDay} onChange={handleChange} />
+            <input name="dobMonth" placeholder="DOB Month" className="input mb-3" value={formData.dobMonth} onChange={handleChange} />
+            <input name="dobYear" placeholder="DOB Year" className="input mb-3" value={formData.dobYear} onChange={handleChange} />
+            <input name="streetNumber" placeholder="Street Number" className="input mb-3" value={formData.streetNumber} onChange={handleChange} />
+            <input name="streetName" placeholder="Street Name" className="input mb-3" value={formData.streetName} onChange={handleChange} />
+            <input name="city" placeholder="City" className="input mb-3" value={formData.city} onChange={handleChange} />
+            <input name="state" placeholder="State" className="input mb-3" value={formData.state} onChange={handleChange} />
+            <input name="zip" placeholder="ZIP" className="input mb-3" value={formData.zip} onChange={handleChange} />
           </>
         );
       case 2:
         return (
           <>
-            {/* Second Step UI here (same as before) */}
+            <input type="file" name="licenseFile" className="input mb-3" onChange={handleChange} />
+            <input name="ssn" placeholder="SSN" className="input mb-3" value={formData.ssn} onChange={handleChange} />
           </>
         );
       case 3:
         return (
           <>
-            {/* Third Step UI here (same as before) */}
+            <input name="phone" placeholder="Phone" className="input mb-3" value={formData.phone} onChange={handleChange} />
+            <input name="email" placeholder="Email" className="input mb-3" value={formData.email} onChange={handleChange} />
           </>
         );
       case 4:
