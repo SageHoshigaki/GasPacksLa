@@ -34,23 +34,27 @@ const MultiStepForm = () => {
   };
 
   const nextStep = () => {
-    const {
-      firstName, lastName, dobDay, dobMonth, dobYear,
-      streetNumber, streetName, city, state, zip,
-      licenseFile, ssn, phone, email
-    } = formData;
-
-    if (step === 1 && (!firstName || !lastName || !dobDay || !dobMonth || !dobYear || !streetNumber || !streetName || !city || !state || !zip)) {
-      alert("Please fill out all required fields before proceeding.");
-      return;
-    }
-    if (step === 2 && (!licenseFile || !ssn)) {
-      alert("Please upload your license and enter your SSN.");
-      return;
-    }
-    if (step === 3 && (!phone || !email)) {
-      alert("Please provide your phone number and email address.");
-      return;
+    if (step === 1) {
+      const {
+        firstName, lastName, dobDay, dobMonth, dobYear,
+        streetNumber, streetName, city, state, zip
+      } = formData;
+      if (!firstName || !lastName || !dobDay || !dobMonth || !dobYear || !streetNumber || !streetName || !city || !state || !zip) {
+        alert("Please fill out all required fields before proceeding.");
+        return;
+      }
+    } else if (step === 2) {
+      const { licenseFile, ssn } = formData;
+      if (!licenseFile || !ssn) {
+        alert("Please upload your license and enter your SSN.");
+        return;
+      }
+    } else if (step === 3) {
+      const { phone, email } = formData;
+      if (!phone || !email) {
+        alert("Please provide your phone number and email address.");
+        return;
+      }
     }
     setStep((prev) => prev + 1);
   };
@@ -59,19 +63,16 @@ const MultiStepForm = () => {
 
   const handleSubmit = async () => {
     const formPayload = new FormData();
-
     Object.entries(formData).forEach(([key, value]) => {
-      if (value) {
-        formPayload.append(key, value);
-      }
+      if (value) formPayload.append(key, value);
     });
 
     try {
-      const token = await window.Clerk?.session?.getToken?.(); // optional: only if using Clerk
-      const response = await fetch("/.netlify/functions/submitForm", {
+      const token = await window.Clerk?.session?.getToken?.();
+      const response = await fetch("/.netlify/functions/saveIdentity", {
         method: "POST",
         headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
+          ...(token && { Authorization: `Bearer ${token}` })
         },
         body: formPayload,
       });
@@ -108,30 +109,104 @@ const MultiStepForm = () => {
       case 1:
         return (
           <>
-            <input name="firstName" placeholder="First Name" className="input mb-3" value={formData.firstName} onChange={handleChange} />
-            <input name="lastName" placeholder="Last Name" className="input mb-3" value={formData.lastName} onChange={handleChange} />
-            <input name="dobDay" placeholder="DOB Day" className="input mb-3" value={formData.dobDay} onChange={handleChange} />
-            <input name="dobMonth" placeholder="DOB Month" className="input mb-3" value={formData.dobMonth} onChange={handleChange} />
-            <input name="dobYear" placeholder="DOB Year" className="input mb-3" value={formData.dobYear} onChange={handleChange} />
-            <input name="streetNumber" placeholder="Street Number" className="input mb-3" value={formData.streetNumber} onChange={handleChange} />
-            <input name="streetName" placeholder="Street Name" className="input mb-3" value={formData.streetName} onChange={handleChange} />
-            <input name="city" placeholder="City" className="input mb-3" value={formData.city} onChange={handleChange} />
-            <input name="state" placeholder="State" className="input mb-3" value={formData.state} onChange={handleChange} />
-            <input name="zip" placeholder="ZIP" className="input mb-3" value={formData.zip} onChange={handleChange} />
+            <h2 className="title is-4 has-text-white">Personal Information</h2>
+            <p className="subtitle is-6 has-text-white">Please provide your name, date of birth, and address details.</p>
+            <div className="columns">
+              <div className="column">
+                <label className="label has-text-white">First Name</label>
+                <input className="input" name="firstName" value={formData.firstName} onChange={handleChange} />
+              </div>
+              <div className="column">
+                <label className="label has-text-white">Last Name</label>
+                <input className="input" name="lastName" value={formData.lastName} onChange={handleChange} />
+              </div>
+            </div>
+            <label className="label mt-4 has-text-white">Date of Birth</label>
+            <div className="columns">
+              <div className="column">
+                <div className="select is-fullwidth">
+                  <select name="dobDay" value={formData.dobDay} onChange={handleChange}>
+                    <option value="">Day</option>
+                    {[...Array(31).keys()].map((d) => (
+                      <option key={d + 1} value={d + 1}>{d + 1}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="column">
+                <div className="select is-fullwidth">
+                  <select name="dobMonth" value={formData.dobMonth} onChange={handleChange}>
+                    <option value="">Month</option>
+                    {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="column">
+                <div className="select is-fullwidth">
+                  <select name="dobYear" value={formData.dobYear} onChange={handleChange}>
+                    <option value="">Year</option>
+                    {[...Array(100).keys()].map((_, i) => {
+                      const year = new Date().getFullYear() - i;
+                      return <option key={year} value={year}>{year}</option>;
+                    })}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <label className="label mt-4 has-text-white">Address</label>
+            <div className="columns is-multiline">
+              <div className="column is-4">
+                <input className="input" name="streetNumber" placeholder="Street Number" value={formData.streetNumber} onChange={handleChange} />
+              </div>
+              <div className="column is-8">
+                <input className="input" name="streetName" placeholder="Street Name" value={formData.streetName} onChange={handleChange} />
+              </div>
+              <div className="column is-5">
+                <input className="input" name="city" placeholder="City" value={formData.city} onChange={handleChange} />
+              </div>
+              <div className="column is-4">
+                <input className="input" name="state" placeholder="State" value={formData.state} onChange={handleChange} />
+              </div>
+              <div className="column is-3">
+                <input className="input" name="zip" placeholder="ZIP Code" value={formData.zip} onChange={handleChange} />
+              </div>
+            </div>
           </>
         );
       case 2:
         return (
           <>
-            <input type="file" name="licenseFile" className="input mb-3" onChange={handleChange} />
-            <input name="ssn" placeholder="SSN" className="input mb-3" value={formData.ssn} onChange={handleChange} />
+            <h2 className="title is-4 has-text-white">License</h2>
+            <p className="subtitle is-6 has-text-white">Upload your license.</p>
+            <div className="field">
+              <label className="label has-text-white">Driver's License</label>
+              <div className="upload-box" style={{ border: "1px dashed #ccc", padding: "2rem", textAlign: "center", cursor: "pointer" }}>
+                <label htmlFor="license-upload">
+                  <img src="/images/upload.png" alt="Upload" style={{ width: "50px", marginBottom: "1rem" }} />
+                  <p>Click to upload driver's license</p>
+                </label>
+                <input id="license-upload" type="file" name="licenseFile" accept="image/*" style={{ display: "none" }} onChange={handleChange} />
+              </div>
+              <label className="label mt-4 has-text-white">SSN</label>
+              <input className="input" name="ssn" value={formData.ssn} onChange={handleChange} />
+            </div>
           </>
         );
       case 3:
         return (
           <>
-            <input name="phone" placeholder="Phone" className="input mb-3" value={formData.phone} onChange={handleChange} />
-            <input name="email" placeholder="Email" className="input mb-3" value={formData.email} onChange={handleChange} />
+            <h2 className="title is-4 has-text-white">Contact Details</h2>
+            <p className="subtitle is-6 has-text-white">Phone and email for contact.</p>
+            <div className="field">
+              <label className="label has-text-white">Phone</label>
+              <input className="input" name="phone" value={formData.phone} onChange={handleChange} />
+            </div>
+            <div className="field">
+              <label className="label has-text-white">Email</label>
+              <input className="input" name="email" value={formData.email} onChange={handleChange} />
+            </div>
           </>
         );
       case 4:
@@ -144,7 +219,7 @@ const MultiStepForm = () => {
             <p><strong>SSN:</strong> {formData.ssn}</p>
             <p><strong>Phone:</strong> {formData.phone}</p>
             <p><strong>Email:</strong> {formData.email}</p>
-           
+            
           </div>
         );
       default:
