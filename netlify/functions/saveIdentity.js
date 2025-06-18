@@ -1,4 +1,3 @@
-const multiparty = require("multiparty");
 const { createClient } = require("@supabase/supabase-js");
 const jwt = require("jsonwebtoken");
 
@@ -16,14 +15,6 @@ exports.handler = async (event) => {
   }
 
   try {
-    const parsed = await new Promise((resolve, reject) => {
-      const form = new multiparty.Form();
-      form.parse(Buffer.from(event.body, "base64"), (err, fields) => {
-        if (err) return reject(err);
-        resolve(fields);
-      });
-    });
-
     const authHeader = event.headers.authorization;
     if (!authHeader) throw new Error("Missing Clerk token");
 
@@ -31,14 +22,31 @@ exports.handler = async (event) => {
     const decoded = jwt.decode(token);
     const userId = decoded.sub;
 
+    const {
+      firstName,
+      lastName,
+      dobYear,
+      dobMonth,
+      dobDay,
+      streetNumber,
+      streetName,
+      city,
+      state,
+      zip,
+      ssn,
+      phone,
+      email,
+    } = JSON.parse(event.body);
+
     const data = {
       user_id: userId,
-      first_name: parsed.firstName?.[0],
-      last_name: parsed.lastName?.[0],
-      dob: `${parsed.dobYear?.[0]}-${parsed.dobMonth?.[0]}-${parsed.dobDay?.[0]}`,
-      address: `${parsed.streetNumber?.[0]} ${parsed.streetName?.[0]}, ${parsed.city?.[0]}, ${parsed.state?.[0]} ${parsed.zip?.[0]}`,
-      phone: parsed.phone?.[0],
-      email: parsed.email?.[0],
+      first_name: firstName,
+      last_name: lastName,
+      dob: `${dobYear}-${dobMonth}-${dobDay}`,
+      address: `${streetNumber} ${streetName}, ${city}, ${state} ${zip}`,
+      ssn,
+      phone,
+      email,
     };
 
     const insert = await supabase.from("user_identity_data").insert([data]);
