@@ -2,7 +2,6 @@ const { parse } = require("multiparty");
 const { createClient } = require("@supabase/supabase-js");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
-const util = require("util");
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -17,13 +16,7 @@ exports.handler = async (event) => {
     };
   }
 
-  const parseForm = util.promisify((req, cb) => {
-    const form = new parse.Form();
-    form.parse(req, cb);
-  });
-
   try {
-    const { req } = event;
     const parsed = await new Promise((resolve, reject) => {
       const form = new parse.Form();
       form.parse(Buffer.from(event.body, "base64"), (err, fields, files) => {
@@ -32,11 +25,10 @@ exports.handler = async (event) => {
       });
     });
 
-    // Verify JWT from Authorization header
     const authHeader = event.headers.authorization;
     if (!authHeader) throw new Error("Missing Clerk token");
-    const token = authHeader.replace("Bearer ", "");
 
+    const token = authHeader.replace("Bearer ", "");
     const decoded = jwt.decode(token);
     const userId = decoded.sub;
 
@@ -51,9 +43,8 @@ exports.handler = async (event) => {
       email: parsed.fields.email?.[0],
     };
 
-    // Upload license file to Supabase Storage
+    // Upload license file if it exists
     const licenseFile = parsed.files.licenseFile?.[0];
-    let licenseUrl = null;
     if (licenseFile) {
       const fileBuffer = fs.readFileSync(licenseFile.path);
       const upload = await supabase.storage
@@ -64,12 +55,11 @@ exports.handler = async (event) => {
         });
 
       if (upload.error) throw upload.error;
-      licenseUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/licenses/${upload.data.path}`;
-      data.license_url = licenseUrl;
+
+      data.license_url = `${process.env.SUPABASE_URL}/storage/v1/object/public/licenses/${upload.data.path}`;
     }
 
     const insert = await supabase.from("user_identity").insert([data]);
-
     if (insert.error) throw insert.error;
 
     return {
