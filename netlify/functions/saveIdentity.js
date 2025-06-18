@@ -59,7 +59,7 @@ exports.handler = async (event) => {
       data.license_url = `${process.env.SUPABASE_URL}/storage/v1/object/public/licenses/${upload.data.path}`;
     }
 
-    const insert = await supabase.from("user_identity").insert([data]);
+    const insert = await supabase.from("user_identity_data").insert([data]);
     if (insert.error) throw insert.error;
 
     return {
