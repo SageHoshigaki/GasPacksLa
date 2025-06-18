@@ -17,8 +17,6 @@ const MultiStepForm = () => {
     city: "",
     state: "",
     zip: "",
-    licenseFile: null,
-    ssn: "",
     phone: "",
     email: "",
   });
@@ -26,10 +24,10 @@ const MultiStepForm = () => {
   const preloadText = `Welcome. To ensure a secure shopping experience, we require a brief background check. This process typically takes 24–72 hours. During this time, your account remains accessible for any updates you may wish to make.`.split(" ");
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: files ? files[0] : value,
+      [name]: value,
     }));
   };
 
@@ -44,12 +42,6 @@ const MultiStepForm = () => {
         return;
       }
     } else if (step === 2) {
-      const { licenseFile, ssn } = formData;
-      if (!licenseFile || !ssn) {
-        alert("Please upload your license and enter your SSN.");
-        return;
-      }
-    } else if (step === 3) {
       const { phone, email } = formData;
       if (!phone || !email) {
         alert("Please provide your phone number and email address.");
@@ -62,19 +54,15 @@ const MultiStepForm = () => {
   const prevStep = () => setStep((prev) => prev - 1);
 
   const handleSubmit = async () => {
-    const formPayload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value) formPayload.append(key, value);
-    });
-
     try {
       const token = await window.Clerk?.session?.getToken?.();
       const response = await fetch("/.netlify/functions/saveIdentity", {
         method: "POST",
         headers: {
-          ...(token && { Authorization: `Bearer ${token}` })
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: formPayload,
+        body: JSON.stringify(formData),
       });
 
       const result = await response.json();
@@ -90,7 +78,7 @@ const MultiStepForm = () => {
     }
   };
 
-  const steps = ["Your Information", "Upload License", "Contact Info", "Summary"];
+  const steps = ["Your Information", "Contact Info", "Summary"];
 
   const renderPreload = () => (
     <div className="has-background-black has-text-white" style={{ height: "100vh", width: "100vw", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "2rem", textAlign: "center" }}>
@@ -178,25 +166,6 @@ const MultiStepForm = () => {
       case 2:
         return (
           <>
-            <h2 className="title is-4 has-text-white">License</h2>
-            <p className="subtitle is-6 has-text-white">Upload your license.</p>
-            <div className="field">
-              <label className="label has-text-white">Driver's License</label>
-              <div className="upload-box" style={{ border: "1px dashed #ccc", padding: "2rem", textAlign: "center", cursor: "pointer" }}>
-                <label htmlFor="license-upload">
-                  <img src="/images/upload.png" alt="Upload" style={{ width: "50px", marginBottom: "1rem" }} />
-                  <p>Click to upload driver's license</p>
-                </label>
-                <input id="license-upload" type="file" name="licenseFile" accept="image/*" style={{ display: "none" }} onChange={handleChange} />
-              </div>
-              <label className="label mt-4 has-text-white">SSN</label>
-              <input className="input" name="ssn" value={formData.ssn} onChange={handleChange} />
-            </div>
-          </>
-        );
-      case 3:
-        return (
-          <>
             <h2 className="title is-4 has-text-white">Contact Details</h2>
             <p className="subtitle is-6 has-text-white">Phone and email for contact.</p>
             <div className="field">
@@ -209,17 +178,15 @@ const MultiStepForm = () => {
             </div>
           </>
         );
-      case 4:
+      case 3:
         return (
           <div className="content has-text-white">
             <h2 className="title is-4">Summary</h2>
             <p><strong>Name:</strong> {formData.firstName} {formData.lastName}</p>
             <p><strong>DOB:</strong> {formData.dobMonth} {formData.dobDay}, {formData.dobYear}</p>
             <p><strong>Address:</strong> {formData.streetNumber} {formData.streetName}, {formData.city}, {formData.state} {formData.zip}</p>
-            <p><strong>SSN:</strong> {formData.ssn}</p>
             <p><strong>Phone:</strong> {formData.phone}</p>
             <p><strong>Email:</strong> {formData.email}</p>
-            
           </div>
         );
       default:
@@ -244,8 +211,8 @@ const MultiStepForm = () => {
           {renderFields()}
           <div className="mt-5 is-flex is-justify-content-space-between">
             {step > 1 && <button className="button is-light" onClick={prevStep}>← Back</button>}
-            {step < 4 && <button className="button is-link" onClick={nextStep}>Next Step →</button>}
-            {step === 4 && <button className="button is-success" onClick={handleSubmit}>Submit</button>}
+            {step < 3 && <button className="button is-link" onClick={nextStep}>Next Step →</button>}
+            {step === 3 && <button className="button is-success" onClick={handleSubmit}>Submit</button>}
           </div>
         </div>
       </div>
