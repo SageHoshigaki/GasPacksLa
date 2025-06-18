@@ -1,4 +1,4 @@
-const { parse } = require("multiparty");
+const multiparty = require("multiparty");
 const { createClient } = require("@supabase/supabase-js");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
@@ -18,7 +18,7 @@ exports.handler = async (event) => {
 
   try {
     const parsed = await new Promise((resolve, reject) => {
-      const form = new parse.Form();
+      const form = new multiparty.Form();
       form.parse(Buffer.from(event.body, "base64"), (err, fields, files) => {
         if (err) return reject(err);
         resolve({ fields, files });
@@ -43,7 +43,6 @@ exports.handler = async (event) => {
       email: parsed.fields.email?.[0],
     };
 
-    // Upload license file if it exists
     const licenseFile = parsed.files.licenseFile?.[0];
     if (licenseFile) {
       const fileBuffer = fs.readFileSync(licenseFile.path);
