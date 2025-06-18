@@ -7,8 +7,7 @@ const MultiStepForm = () => {
   const [showPreload, setShowPreload] = useState(true);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+  
     dobDay: "",
     dobMonth: "",
     dobYear: "",
@@ -37,7 +36,7 @@ const MultiStepForm = () => {
         firstName, lastName, dobDay, dobMonth, dobYear,
         streetNumber, streetName, city, state, zip
       } = formData;
-      if (!firstName || !lastName || !dobDay || !dobMonth || !dobYear || !streetNumber || !streetName || !city || !state || !zip) {
+      if (!dobDay || !dobMonth || !dobYear || !streetNumber || !streetName || !city || !state || !zip) {
         alert("Please fill out all required fields before proceeding.");
         return;
       }
