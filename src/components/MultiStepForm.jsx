@@ -175,7 +175,7 @@ const MultiStepForm = () => {
         return (
           <div className="content has-text-white">
             <h2 className="title is-4">Summary</h2>
-            <p><strong>Name:</strong> {formData.firstName} {formData.lastName}</p>
+           
             <p><strong>DOB:</strong> {formData.dobMonth} {formData.dobDay}, {formData.dobYear}</p>
             <p><strong>Address:</strong> {formData.streetNumber} {formData.streetName}, {formData.city}, {formData.state} {formData.zip}</p>
             <p><strong>Phone:</strong> {formData.phone}</p>
