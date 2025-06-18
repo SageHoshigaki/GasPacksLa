@@ -35,7 +35,6 @@ exports.handler = async (event) => {
       zip,
       ssn,
       phone,
-      email,
     } = JSON.parse(event.body);
 
     const data = {
@@ -46,7 +45,6 @@ exports.handler = async (event) => {
       address: `${streetNumber} ${streetName}, ${city}, ${state} ${zip}`,
       ssn,
       phone,
-      email,
     };
 
     const insert = await supabase.from("user_identity_data").insert([data]);

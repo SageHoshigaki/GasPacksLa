@@ -18,7 +18,7 @@ const MultiStepForm = () => {
     state: "",
     zip: "",
     phone: "",
-    email: "",
+
   });
 
   const preloadText = `Welcome. To ensure a secure shopping experience, we require a brief background check. This process typically takes 24–72 hours. During this time, your account remains accessible for any updates you may wish to make.`.split(" ");
