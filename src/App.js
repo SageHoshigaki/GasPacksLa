@@ -10,6 +10,7 @@ import Shop from "./components/Shop";
 import ProtectedShopRoute from "./components/ProtectedShopRoute";
 import NotAuthorized from "./components/NotAuthorized";
 import AdminUserPanel from "./components/AdminUserPanel";
+import DispensaryLocator from "./components/DispensaryLocator";
 
 const clerkStyles = {
   rootBox: {
@@ -33,6 +34,7 @@ function App() {
       <Routes>
         {/* PUBLIC ROUTES */}
         <Route path="/admin" element={<AdminUserPanel />} />
+        <Route path="/locator" element={<DispensaryLocator />} />
         <Route path="/" element={<LandingPage />} />
         <Route
           path="/sign-in"

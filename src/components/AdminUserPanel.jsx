@@ -1,103 +1,57 @@
-import React, { useEffect, useState } from "react";
-import { useUser } from "@clerk/clerk-react";
-import { supabase } from '../lib/supabaseClient'; // update path if needed
+import React from "react";
+import "../css/AdminPanel.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUsers,
+  faChartLine,
+  faDollarSign,
+  faCogs,
+} from "@fortawesome/free-solid-svg-icons";
+import { motion } from "framer-motion";
+
+const cardData = [
+  {
+    icon: faUsers,
+    title: "Users",
+    description: "Manage user accounts and permissions.",
+  },
+  {
+    icon: faChartLine,
+    title: "Data Analytics",
+    description: "View system stats and user insights.",
+  },
+  {
+    icon: faDollarSign,
+    title: "Finance",
+    description: "Monitor revenue and transactions.",
+  },
+  {
+    icon: faCogs,
+    title: "System",
+    description: "DevOps tools and system health.",
+  },
+];
 
 const AdminUserPanel = () => {
-  const { user } = useUser();
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchUsers = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("user_verification_status")
-      .select("id, user_id, status, updated_at")
-      .order("updated_at", { ascending: false });
-
-    if (error) console.error("Error loading users:", error);
-    else setUsers(data);
-
-    setLoading(false);
-  };
-
-  const updateStatus = async (id, status) => {
-    const { error } = await supabase
-      .from("user_verification_status")
-      .update({ status })
-      .eq("id", id);
-
-    if (error) alert("Update failed");
-    else fetchUsers();
-  };
-
-  useEffect(() => {
-    if (user?.primaryEmailAddress?.emailAddress === "admin@gaspacksla.com") {
-      fetchUsers();
-    }
-  }, [user]);
-
-  if (!user || user.primaryEmailAddress.emailAddress !== "admin@gaspacksla.com") {
-    return <div className="notification is-danger mt-6 has-text-centered">Access Denied</div>;
-  }
-
   return (
-    <section className="section">
-      <div className="container">
-        <h1 className="title is-3 has-text-centered">Admin User Panel</h1>
-
-        {loading ? (
-          <progress className="progress is-small is-info" max="100">Loading</progress>
-        ) : (
-          <div className="table-container">
-            <table className="table is-bordered is-striped is-fullwidth">
-              <thead>
-                <tr>
-                  <th>User ID</th>
-                  <th>Status</th>
-                  <th>Last Updated</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td>{user.user_id}</td>
-                    <td><span className={`tag is-${
-                      user.status === "approved"
-                        ? "success"
-                        : user.status === "pending"
-                        ? "warning"
-                        : "danger"
-                    }`}>{user.status}</span></td>
-                    <td>{new Date(user.updated_at).toLocaleString()}</td>
-                    <td>
-                      <div className="buttons are-small">
-                        <button
-                          className="button is-success"
-                          onClick={() => updateStatus(user.id, "approved")}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="button is-warning"
-                          onClick={() => updateStatus(user.id, "pending")}
-                        >
-                          Pending
-                        </button>
-                        <button
-                          className="button is-danger"
-                          onClick={() => updateStatus(user.id, "rejected")}
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+    <section className="section has-background-black is-flex is-justify-content-center is-align-items-center" style={{ minHeight: "100vh" }}>
+      <div className="card-grid">
+        {cardData.map((card, idx) => (
+          <motion.div
+            key={idx}
+            className="admin-card"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1, duration: 0.6, ease: "easeOut" }}
+            whileHover={{ scale: 1.05, boxShadow: "0px 10px 25px rgba(0, 123, 255, 0.5)" }}
+          >
+            <div className="icon-wrapper">
+              <FontAwesomeIcon icon={card.icon} className="icon is-large has-text-link" />
+            </div>
+            <h2 className="title is-5 has-text-white mt-3">{card.title}</h2>
+            <p className="has-text-white is-size-7 has-text-centered px-2">{card.description}</p>
+          </motion.div>
+        ))}
       </div>
     </section>
   );

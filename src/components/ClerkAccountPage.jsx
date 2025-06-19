@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { SignedIn, SignedOut, UserProfile, useUser } from "@clerk/clerk-react";
-import { useEffect, useState } from "react";
-import { supabase } from '../lib/supabaseClient'; // customize this import path
+import { supabase } from '../lib/supabaseClient';
+import "../css/ClerkFullPage.css"
 
 const ClerkAccountPage = () => {
   const { user } = useUser();
@@ -10,36 +10,32 @@ const ClerkAccountPage = () => {
   useEffect(() => {
     const fetchStatus = async () => {
       if (!user) return;
-
       const { data, error } = await supabase
         .from("user_profiles")
         .select("status")
         .eq("clerk_id", user.id)
         .single();
 
-      if (error) {
-        console.error("Error fetching status:", error);
-        setStatus("unknown");
-      } else {
-        setStatus(data.status);
-      }
+      setStatus(error ? "unknown" : data.status);
     };
-
     fetchStatus();
   }, [user]);
 
   return (
-    <div className="container p-6">
+    <div className="clerk-page-wrapper">
       <SignedIn>
-        <h1 className="title is-4">Account Settings</h1>
-        <div className="box mb-5">
-          <p><strong>Status:</strong> {status || "Loading..."}</p>
+        <div>
+           <progress class="progress is-danger" value="50" max="100">
+            90%</progress>
+             <div className="status-bar">Status: {status || "Loading..."}</div>
         </div>
+
         <UserProfile />
       </SignedIn>
-
       <SignedOut>
-        <p>You must be signed in to view this page.</p>
+        <div className="has-text-white has-text-centered mt-6">
+          You must be signed in to view this page.
+        </div>
       </SignedOut>
     </div>
   );
