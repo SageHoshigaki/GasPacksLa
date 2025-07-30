@@ -1,0 +1,233 @@
+[
+    {
+      "name": "Green Street Buds",
+      "address": "123 Green St, New York, NY 10001",
+      "phone": "(212) 555-4312",
+      "city": "New York",
+      "state": "NY"
+    },
+    {
+      "name": "Herbal Vibes",
+      "address": "456 Chill Ave, Brooklyn, NY 11211",
+      "phone": "(917) 555-2199",
+      "city": "New York",
+      "state": "NY"
+    },
+    {
+      "name": "Empire Ganja",
+      "address": "789 Empire Blvd, Queens, NY 11375",
+      "phone": "(718) 555-8741",
+      "city": "New York",
+      "state": "NY"
+    },
+    {
+      "name": "Uptown Extracts",
+      "address": "321 Uptown Ln, Bronx, NY 10463",
+      "phone": "(929) 555-1109",
+      "city": "New York",
+      "state": "NY"
+    },
+  
+    {
+      "name": "South Beach Greenery",
+      "address": "100 Ocean Dr, Miami, FL 33139",
+      "phone": "(305) 555-9933",
+      "city": "Miami",
+      "state": "FL"
+    },
+    {
+      "name": "Magic Leaf",
+      "address": "200 Magic Way, Miami, FL 33132",
+      "phone": "(305) 555-8877",
+      "city": "Miami",
+      "state": "FL"
+    },
+    {
+      "name": "Sunshine Extracts",
+      "address": "300 Palm Blvd, Miami, FL 33137",
+      "phone": "(305) 555-9988",
+      "city": "Miami",
+      "state": "FL"
+    },
+    {
+      "name": "Everglade Dispensary",
+      "address": "400 Grove Ave, Miami, FL 33133",
+      "phone": "(786) 555-4455",
+      "city": "Miami",
+      "state": "FL"
+    },
+  
+    {
+      "name": "ChiTown Buds",
+      "address": "1100 W Loop Dr, Chicago, IL 60607",
+      "phone": "(773) 555-1200",
+      "city": "Chicago",
+      "state": "IL"
+    },
+    {
+      "name": "Windy City Greens",
+      "address": "2200 N Clark St, Chicago, IL 60614",
+      "phone": "(312) 555-3344",
+      "city": "Chicago",
+      "state": "IL"
+    },
+    {
+      "name": "South Side Extracts",
+      "address": "3300 S King Dr, Chicago, IL 60616",
+      "phone": "(773) 555-7777",
+      "city": "Chicago",
+      "state": "IL"
+    },
+    {
+      "name": "North Bud Collective",
+      "address": "4400 N Milwaukee Ave, Chicago, IL 60641",
+      "phone": "(847) 555-9090",
+      "city": "Chicago",
+      "state": "IL"
+    },
+  
+    {
+      "name": "Peach State Extracts",
+      "address": "500 Peachtree St, Atlanta, GA 30308",
+      "phone": "(404) 555-3333",
+      "city": "Atlanta",
+      "state": "GA"
+    },
+    {
+      "name": "ATL Bud Barn",
+      "address": "600 Edgewood Ave, Atlanta, GA 30312",
+      "phone": "(470) 555-8899",
+      "city": "Atlanta",
+      "state": "GA"
+    },
+    {
+      "name": "Trap Treez",
+      "address": "700 Bankhead Hwy, Atlanta, GA 30318",
+      "phone": "(404) 555-1212",
+      "city": "Atlanta",
+      "state": "GA"
+    },
+    {
+      "name": "Marta Medz",
+      "address": "800 Ponce De Leon Ave, Atlanta, GA 30306",
+      "phone": "(678) 555-1122",
+      "city": "Atlanta",
+      "state": "GA"
+    },
+  
+    {
+      "name": "LA Chill Collective",
+      "address": "900 Sunset Blvd, Los Angeles, CA 90026",
+      "phone": "(213) 555-3210",
+      "city": "Los Angeles",
+      "state": "CA"
+    },
+    {
+      "name": "Hollywood Herbz",
+      "address": "1000 Vine St, Los Angeles, CA 90038",
+      "phone": "(310) 555-2121",
+      "city": "Los Angeles",
+      "state": "CA"
+    },
+    {
+      "name": "Cali Kush Spot",
+      "address": "1100 Fairfax Ave, Los Angeles, CA 90019",
+      "phone": "(323) 555-7070",
+      "city": "Los Angeles",
+      "state": "CA"
+    },
+    {
+      "name": "West Coast Dank",
+      "address": "1200 Melrose Ave, Los Angeles, CA 90046",
+      "phone": "(818) 555-6655",
+      "city": "Los Angeles",
+      "state": "CA"
+    },
+  
+    {
+      "name": "Houston Haze",
+      "address": "1300 Main St, Houston, TX 77002",
+      "phone": "(713) 555-3344",
+      "city": "Houston",
+      "state": "TX"
+    },
+    {
+      "name": "Space City Meds",
+      "address": "1400 NASA Pkwy, Houston, TX 77058",
+      "phone": "(832) 555-2233",
+      "city": "Houston",
+      "state": "TX"
+    },
+    {
+      "name": "Purple Bayou",
+      "address": "1500 Bay Area Blvd, Houston, TX 77058",
+      "phone": "(346) 555-5566",
+      "city": "Houston",
+      "state": "TX"
+    },
+    {
+      "name": "Lone Star Buds",
+      "address": "1600 Westheimer Rd, Houston, TX 77006",
+      "phone": "(281) 555-1144",
+      "city": "Houston",
+      "state": "TX"
+    },
+  
+    {
+      "name": "Denver Dope Co.",
+      "address": "1700 Colfax Ave, Denver, CO 80206",
+      "phone": "(720) 555-1122",
+      "city": "Denver",
+      "state": "CO"
+    },
+    {
+      "name": "Mile High Herb",
+      "address": "1800 Speer Blvd, Denver, CO 80204",
+      "phone": "(303) 555-2121",
+      "city": "Denver",
+      "state": "CO"
+    },
+    {
+      "name": "Rocky Mountain Kush",
+      "address": "1900 Broadway, Denver, CO 80203",
+      "phone": "(720) 555-4141",
+      "city": "Denver",
+      "state": "CO"
+    },
+    {
+      "name": "Elevation Extracts",
+      "address": "2000 Blake St, Denver, CO 80205",
+      "phone": "(303) 555-9009",
+      "city": "Denver",
+      "state": "CO"
+    },
+  
+    {
+      "name": "Boston Bud Bar",
+      "address": "2100 Beacon St, Boston, MA 02135",
+      "phone": "(617) 555-8888",
+      "city": "Boston",
+      "state": "MA"
+    },
+    {
+      "name": "Harvard Haze",
+      "address": "2200 Massachusetts Ave, Boston, MA 02138",
+      "phone": "(857) 555-2222",
+      "city": "Boston",
+      "state": "MA"
+    },
+    {
+      "name": "Fenway Flower Co.",
+      "address": "2300 Boylston St, Boston, MA 02215",
+      "phone": "(617) 555-7890",
+      "city": "Boston",
+      "state": "MA"
+    },
+    {
+      "name": "Beacon Blaze",
+      "address": "2400 Charles St, Boston, MA 02114",
+      "phone": "(617) 555-4545",
+      "city": "Boston",
+      "state": "MA"
+    }
+  ]

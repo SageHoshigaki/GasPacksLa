@@ -7,7 +7,7 @@ import IDUploadPage from "./components/IdUpload";
 import MultiStepForm from "./components/MultiStepForm";
 import ClerkAccountPage from "./components/ClerkAccountPage";
 import Shop from "./components/Shop";
-import ProtectedShopRoute from "./components/ProtectedShopRoute";
+//import ProtectedShopRoute from "./components/ProtectedShopRoute";
 import NotAuthorized from "./components/NotAuthorized";
 import AdminUserPanel from "./components/AdminUserPanel";
 import DispensaryLocator from "./components/DispensaryLocator";
@@ -63,14 +63,7 @@ function App() {
         <Route path="/upload-id" element={<IDUploadPage />} />
         <Route path="/form" element={<MultiStepForm />} />
         <Route path="/account" element={<ClerkAccountPage />} />
-        <Route
-          path="/shop"
-          element={
-            <ProtectedShopRoute>
-              <Shop />
-            </ProtectedShopRoute>
-          }
-        />
+        <Route path="/shop" element={<Shop />} />
         <Route path="/not-authorized" element={<NotAuthorized />} />
 
         {/* 404 */}

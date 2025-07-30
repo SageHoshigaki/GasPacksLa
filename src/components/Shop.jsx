@@ -1,57 +1,93 @@
-// components/ShopPage.jsx
 import React from "react";
+
 
 const products = [
   {
-    name: "SPACED SHEER CREWNECK",
-    price: "$395.00",
-    image: "/images/spaced_sheer_crewneck.jpg",
-    tag: "NEW"
+    id: 1,
+    name: '"American Luxury" Hoodie',
+    price: 395,
+    image: '/images/product1.jpg',
+    soldOut: false,
   },
   {
-    name: "CAR JEANS",
-    price: "$385.00",
-    image: "/images/car_jeans.jpg",
-    tag: "NEW"
+    id: 2,
+    name: '"Out Of Many, One" Hoodie',
+    price: 395,
+    image: '/images/product2.jpg',
+    soldOut: false,
   },
   {
-    name: "SHEER STRIPE TEE",
-    price: "$325.00",
-    image: "/images/sheer_stripe_tee.jpg",
-    tag: "NEW"
+    id: 3,
+    name: '"Out Of Many, One" L/S Tee',
+    price: 225,
+    image: '/images/product3.jpg',
+    soldOut: true,
   },
   {
-    name: "LASER STUDIO HOODIE",
-    price: "$295.00",
-    image: "/images/laser_studio_hoodie.jpg",
-    tag: "NEW"
-  }
+    id: 4,
+    name: '"Unity Through Style" Crewneck',
+    price: 325,
+    image: '/images/product4.jpg',
+    soldOut: false,
+  },
+  {
+    id: 5,
+    name: '"Barriers Edition" Joggers',
+    price: 285,
+    image: '/images/product5.jpg',
+    soldOut: false,
+  },
+  {
+    id: 6,
+    name: '"Minimal Luxe" Zip Hoodie',
+    price: 375,
+    image: '/images/product6.jpg',
+    soldOut: false,
+  },
+  {
+    id: 7,
+    name: '"Fear X Barriers" Sweatpants',
+    price: 290,
+    image: '/images/product7.jpg',
+    soldOut: false,
+  },
+  {
+    id: 8,
+    name: '"Heritage Statement" Tee',
+    price: 215,
+    image: '/images/product8.jpg',
+    soldOut: false,
+  },
 ];
 
-const ShopPage = () => {
+const Shop = () => {
   return (
-    <div className="px-6 py-8">
-      <h1 className="text-4xl font-bold text-center mb-8">HELMUT LANG</h1>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {products.map((product, index) => (
-          <div key={index} className="text-center">
-            <div className="relative">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-auto object-cover mb-2"
-              />
-              <span className="absolute top-2 left-2 bg-white text-black text-xs px-2 py-1 font-semibold">
-                {product.tag}
-              </span>
+    <section className="section has-background-black has-text-black">
+      <div className="container">
+        <div className="columns is-multiline">
+          {products.map((product) => (
+            <div className="column is-one-quarter" key={product.id}>
+              <div className="card has-background-white has-text-black">
+                <div className="card-image">
+                  <figure className="image is-square">
+                    <img src={product.image} alt={product.name} />
+                  </figure>
+                </div>
+                <div className="card-content">
+                  {product.soldOut && (
+                    <p className="has-text-danger has-text-weight-bold is-size-7 mb-1">SOLD OUT</p>
+                  )}
+                  <p className="is-uppercase is-size-7 has-text-grey">Fear of God</p>
+                  <p className="has-text-weight-semibold">{product.name}</p>
+                  <p className="is-size-7 mt-1">${product.price}</p>
+                </div>
+              </div>
             </div>
-            <div className="text-sm font-medium mt-2">{product.name}</div>
-            <div className="text-sm font-bold">{product.price}</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
-export default ShopPage;
+export default Shop;
