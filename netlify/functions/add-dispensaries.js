@@ -6,9 +6,26 @@ const supabase = createClient(
 );
 
 exports.handler = async (event) => {
+  // ✅ Handle preflight OPTIONS request
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+      },
+      body: "OK",
+    };
+  }
+
+  // ❌ Reject non-POST requests
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
       body: JSON.stringify({ error: "Method not allowed" }),
     };
   }
@@ -19,6 +36,9 @@ exports.handler = async (event) => {
     if (!Array.isArray(dispensaries)) {
       return {
         statusCode: 400,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
         body: JSON.stringify({ error: "Invalid JSON array format" }),
       };
     }
@@ -31,6 +51,9 @@ exports.handler = async (event) => {
       console.error("❌ Supabase Insert Error:", error.message);
       return {
         statusCode: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
         body: JSON.stringify({ error: error.message }),
       };
     }
@@ -38,12 +61,18 @@ exports.handler = async (event) => {
     console.log("✅ Inserted:", data);
     return {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
       body: JSON.stringify({ success: true, inserted: data.length }),
     };
   } catch (err) {
     console.error("❌ Function Error:", err.message);
     return {
       statusCode: 500,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
       body: JSON.stringify({ error: "Invalid JSON or internal error" }),
     };
   }
