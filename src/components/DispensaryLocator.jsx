@@ -1,28 +1,20 @@
+// 📦 External Imports
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GoogleMap, Marker, LoadScript } from "@react-google-maps/api";
+import { supabase } from "../lib/supabaseClient";
+// 🔐 Supabase Client Setup
 
-// Dispensary data (with coordinates)
-const dummyDispensaries = [
-  {
-    id: "disp_001",
-    name: "Green Street Buds",
-    phone: "(212) 555-4312",
-    address: "123 Green St, New York, NY 10001",
-    lat: 40.7465,
-    lng: -73.9934,
-  },
-  {
-    id: "disp_002",
-    name: "Herbal Vibes",
-    phone: "(917) 555-2199",
-    address: "456 Chill Ave, Brooklyn, NY 11211",
-    lat: 40.7092,
-    lng: -73.9571,
-  }
-];
 
-// Distance formula
+// 🗺️ Google Map Style
+const mapContainerStyle = {
+  width: "100%",
+  height: "300px",
+  borderRadius: "8px",
+  marginBottom: "1.5rem",
+};
+
+// 📏 Haversine Distance Calculation
 const getDistanceMiles = (lat1, lon1, lat2, lon2) => {
   const R = 3958.8;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -30,17 +22,9 @@ const getDistanceMiles = (lat1, lon1, lat2, lon2) => {
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) ** 2;
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-};
-
-// Google Maps styling
-const mapContainerStyle = {
-  width: "100%",
-  height: "300px",
-  borderRadius: "8px",
-  marginBottom: "1.5rem",
 };
 
 export default function DispensaryLocator() {
@@ -51,19 +35,64 @@ export default function DispensaryLocator() {
 
   const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
-  // 🔥 Auto-locate on load
+  // 🔍 Search Supabase Dispensaries by ZIP / City / State
+  const searchDispensaries = async (query) => {
+    let { data, error } = await supabase
+      .from("Dispensaries")
+      .select("*")
+      .ilike("address", `%${query}%`);
+
+    if (error) {
+      console.error("Supabase Search Error:", error.message);
+      return [];
+    }
+
+    const enriched = await Promise.all(
+      data.map(async (store) => {
+        const geo = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+            store.address
+          )}&key=${apiKey}`
+        );
+        const geoData = await geo.json();
+        const location = geoData.results?.[0]?.geometry?.location;
+        return location ? { ...store, lat: location.lat, lng: location.lng } : null;
+      })
+    );
+
+    return enriched.filter(Boolean);
+  };
+
+  // 📍 Auto-locate on Load
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
           const location = { lat: latitude, lng: longitude };
           setUserLocation(location);
 
-          const nearby = dummyDispensaries.filter((store) => {
-            const dist = getDistanceMiles(latitude, longitude, store.lat, store.lng);
-            return dist <= 20;
-          });
+          // Find nearby dispensaries from DB
+          const { data } = await supabase.from("Dispensaries").select("*");
+
+          const enriched = await Promise.all(
+            data.map(async (store) => {
+              const geo = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+                  store.address
+                )}&key=${apiKey}`
+              );
+              const geoData = await geo.json();
+              const location = geoData.results?.[0]?.geometry?.location;
+              return location ? { ...store, lat: location.lat, lng: location.lng } : null;
+            })
+          );
+
+          const nearby = enriched
+            .filter(Boolean)
+            .filter((store) =>
+              getDistanceMiles(latitude, longitude, store.lat, store.lng) <= 20
+            );
 
           setDispensaries(nearby);
           setSearched(true);
@@ -73,12 +102,16 @@ export default function DispensaryLocator() {
         }
       );
     }
-  }, []);
+  }, [apiKey]);
 
-  const handleSearch = () => {
-    const results = dummyDispensaries.filter((d) => d.address.includes("NY"));
+  // 🔍 Handle Manual ZIP / City / State Search
+  const handleSearch = async () => {
+    const results = await searchDispensaries(zip);
     setDispensaries(results);
     setSearched(true);
+    if (results.length > 0) {
+      setUserLocation({ lat: results[0].lat, lng: results[0].lng });
+    }
   };
 
   return (
@@ -90,7 +123,7 @@ export default function DispensaryLocator() {
               Find Nearby Dispensaries
             </h1>
 
-            {/* 🗺️ Interactive Map */}
+            {/* 🗺️ Google Map */}
             {userLocation && (
               <GoogleMap
                 mapContainerStyle={mapContainerStyle}
@@ -108,25 +141,30 @@ export default function DispensaryLocator() {
               </GoogleMap>
             )}
 
-            {/* Search Box */}
+            {/* 🔍 Search Box */}
             <div className="field has-addons is-justify-content-center mb-3">
               <div className="control is-expanded">
                 <input
                   className="input is-medium"
                   type="text"
-                  placeholder="Enter ZIP code"
+                  placeholder="Enter ZIP, City, or State"
                   value={zip}
                   onChange={(e) => setZip(e.target.value)}
                 />
               </div>
               <div className="control">
-                <button className="button is-medium is-danger" onClick={handleSearch}>
-                  <span className="icon"><i className="fas fa-search"></i></span>
+                <button
+                  className="button is-medium is-danger"
+                  onClick={handleSearch}
+                >
+                  <span className="icon">
+                    <i className="fas fa-search"></i>
+                  </span>
                 </button>
               </div>
             </div>
 
-            {/* No Results */}
+            {/* 🚫 No Results */}
             <AnimatePresence>
               {searched && dispensaries.length === 0 && (
                 <motion.p
@@ -140,7 +178,7 @@ export default function DispensaryLocator() {
               )}
             </AnimatePresence>
 
-            {/* Dispensary Cards */}
+            {/* 🧾 Dispensary Cards */}
             <div className="columns is-multiline is-centered">
               {dispensaries.map((dispensary) => (
                 <motion.div
@@ -152,17 +190,13 @@ export default function DispensaryLocator() {
                 >
                   <div className="box">
                     <div className="columns is-vcentered">
-                      {/* Left: Info */}
                       <div className="column is-8">
                         <h2 className="title is-4">{dispensary.name}</h2>
                         <p>{dispensary.address}</p>
                         <p className="has-text-grey">{dispensary.phone}</p>
                       </div>
-
-                      {/* Right: Image */}
                       <div className="column is-4 has-text-centered">
                         <figure className="image is-4by3">
-                          {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
                           <img
                             src={`/images/Stores/rickstore.jpg`}
                             alt={`${dispensary.name}`}
@@ -170,7 +204,7 @@ export default function DispensaryLocator() {
                               borderRadius: "8px",
                               maxHeight: "160px",
                               objectFit: "cover",
-                              width: "100%"
+                              width: "100%",
                             }}
                           />
                         </figure>

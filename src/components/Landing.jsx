@@ -25,7 +25,7 @@ const LandingPage = () => {
         }}
       >
         <img
-          src="/images/GPImages/gaspacksani.png"
+          src="/images/product/gaspacksani.png"
           alt="GasPacks Loading"
           style={{
             width: '650px',
@@ -52,7 +52,7 @@ const LandingPage = () => {
           fontFamily: 'Cherry Bomb One, cursive',
         }}
       >
-        <img src="/images/GPImages/gaspackslogo.png" alt="GasPacks Logo" style={{ width: '220px', marginBottom: '1rem' }} />
+        <img src="/images/product/gaspackslogo.png" alt="GasPacks Logo" style={{ width: '220px', marginBottom: '1rem' }} />
         <p className="subtitle consent-message is-4">ARE YOU OVER 21 YEARS OF AGE?</p>
         <div className="buttons">
           <button className="button is-link is-medium" onClick={() => setAgeConfirmed(false)}>NO</button>

@@ -7,6 +7,7 @@ import IDUploadPage from "./components/IdUpload";
 import MultiStepForm from "./components/MultiStepForm";
 import ClerkAccountPage from "./components/ClerkAccountPage";
 import Shop from "./components/Shop";
+import ProductDetail from "./components/ProductDetail";
 //import ProtectedShopRoute from "./components/ProtectedShopRoute";
 import NotAuthorized from "./components/NotAuthorized";
 import AdminUserPanel from "./components/AdminUserPanel";
@@ -27,7 +28,7 @@ const clerkStyles = {
     backgroundColor: "#fff",
   },
 };
-
+console.log("ENV:", process.env.REACT_APP_SUPABASE_URL);
 function App() {
   return (
     <BrowserRouter>
@@ -35,6 +36,7 @@ function App() {
         {/* PUBLIC ROUTES */}
         <Route path="/admin" element={<AdminUserPanel />} />
         <Route path="/locator" element={<DispensaryLocator />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/" element={<LandingPage />} />
         <Route
           path="/sign-in"

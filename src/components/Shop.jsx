@@ -1,93 +1,41 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
+import { Link } from "react-router-dom";
 
+export default function Shop() {
+  const [products, setProducts] = useState([]);
 
-const products = [
-  {
-    id: 1,
-    name: '"American Luxury" Hoodie',
-    price: 395,
-    image: '/images/product1.jpg',
-    soldOut: false,
-  },
-  {
-    id: 2,
-    name: '"Out Of Many, One" Hoodie',
-    price: 395,
-    image: '/images/product2.jpg',
-    soldOut: false,
-  },
-  {
-    id: 3,
-    name: '"Out Of Many, One" L/S Tee',
-    price: 225,
-    image: '/images/product3.jpg',
-    soldOut: true,
-  },
-  {
-    id: 4,
-    name: '"Unity Through Style" Crewneck',
-    price: 325,
-    image: '/images/product4.jpg',
-    soldOut: false,
-  },
-  {
-    id: 5,
-    name: '"Barriers Edition" Joggers',
-    price: 285,
-    image: '/images/product5.jpg',
-    soldOut: false,
-  },
-  {
-    id: 6,
-    name: '"Minimal Luxe" Zip Hoodie',
-    price: 375,
-    image: '/images/product6.jpg',
-    soldOut: false,
-  },
-  {
-    id: 7,
-    name: '"Fear X Barriers" Sweatpants',
-    price: 290,
-    image: '/images/product7.jpg',
-    soldOut: false,
-  },
-  {
-    id: 8,
-    name: '"Heritage Statement" Tee',
-    price: 215,
-    image: '/images/product8.jpg',
-    soldOut: false,
-  },
-];
+  useEffect(() => {
+    const loadProducts = async () => {
+      const { data, error } = await supabase.from("products").select("*");
+      if (error) console.error(error);
+      else setProducts(data);
+    };
+    loadProducts();
+  }, []);
 
-const Shop = () => {
   return (
-    <section className="section has-background-black has-text-black">
+    <section className="section has-background-white">
       <div className="container">
         <div className="columns is-multiline">
           {products.map((product) => (
-            <div className="column is-one-quarter" key={product.id}>
-              <div className="card has-background-white has-text-black">
-                <div className="card-image">
+            <div key={product.id} className="column is-12-mobile is-6-tablet is-4-desktop">
+              <Link to={`/product/${product.id}`}>
+                <div className="box" style={{ border: "none", padding: 0, cursor: "pointer" }}>
                   <figure className="image is-square">
-                    <img src={product.image} alt={product.name} />
+                    <img src={product.image_url} alt={product.name} />
                   </figure>
+                  <div className="mt-3 px-2">
+                    <p className="is-size-7 has-text-weight-semibold">{product.brand}</p>
+                    <p className="is-size-6 mb-1">{product.name}</p>
+                    <p className="is-size-6 has-text-weight-bold">${Number(product.price).toLocaleString()}</p>
+                  </div>
                 </div>
-                <div className="card-content">
-                  {product.soldOut && (
-                    <p className="has-text-danger has-text-weight-bold is-size-7 mb-1">SOLD OUT</p>
-                  )}
-                  <p className="is-uppercase is-size-7 has-text-grey">Fear of God</p>
-                  <p className="has-text-weight-semibold">{product.name}</p>
-                  <p className="is-size-7 mt-1">${product.price}</p>
-                </div>
-              </div>
+              </Link>
             </div>
           ))}
         </div>
       </div>
     </section>
   );
-};
-
-export default Shop;
+}

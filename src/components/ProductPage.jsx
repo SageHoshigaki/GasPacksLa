@@ -1,71 +1,54 @@
-// src/components/ProductPage.jsx
-import React from "react";
-import "../css/ProductPage.css";
+import React from 'react';
 
 const ProductPage = ({ product }) => {
+  if (!product) return <div>Loading...</div>;
+
+  const {
+    strain_name,
+    type,
+    thc,
+    quantity,
+    price,
+    image_url,
+    description = "Premium strain curated by GasPacks. Hand-trimmed, slow-cured, and lab-tested for purity and potency.",
+  } = product;
+
   return (
-    <div className="product-page-wrapper">
-      <div className="product-page">
-        <div className="product-gallery">
-          <img
-            src={product.imageUrlFront}
-            alt={product.name}
-            className="product-img"
-          />
-          {product.imageUrlBack && (
+    <section className="section product-container fade-in">
+      <div className="columns is-variable is-8 is-vcentered">
+
+        {/* Left: Image */}
+        <div className="column is-half">
+          <figure className="image is-3by4">
             <img
-              src={product.imageUrlBack}
-              alt={product.name + " back"}
-              className="product-img"
+              className="product-image"
+              src={image_url}
+              alt={strain_name}
+              style={{ objectFit: 'cover', width: '100%' }}
             />
-          )}
+          </figure>
         </div>
 
-        <div className="product-details">
-          <h2 className="brand-name">FEAR OF GOD</h2>
-          <h1 className="product-title">"{product.name}"</h1>
-          <div className="price">${product.price}</div>
+        {/* Right: Product Details */}
+        <div className="column is-half">
+          <h1 className="title is-2">{strain_name}</h1>
+          <h2 className="subtitle is-4 has-text-grey">
+            {type} · {thc} THC · {quantity}
+          </h2>
+          <p className="is-size-5 mb-5">{description}</p>
+          <p className="title is-4">${price}</p>
 
-          <div className="options">
-            <select defaultValue="Cream">
-              <option>Cream</option>
-            </select>
-            <select defaultValue="">
-              <option disabled>Select Size</option>
-              {product.sizes.map((size, idx) => (
-                <option key={idx}>{size}</option>
-              ))}
-            </select>
-            <span className="size-chart">SIZE CHART</span>
+          <div className="buttons mt-4">
+            <button className="button is-black is-medium">Add to Cart</button>
           </div>
 
-          <button className="add-to-cart" disabled>
-            ADD TO CART
-          </button>
-
-          <div className="description">
-            <p>{product.description}</p>
-            <p className="note">Proceeds benefiting The Shabazz Center.</p>
-            <p className="final-sale">ALL SALES OF THIS ITEM ARE FINAL.</p>
-          </div>
-
-          <div className="expandables">
-            <details>
-              <summary>DETAILS</summary>
-              <p>{product.details}</p>
-            </details>
-            <details>
-              <summary>SHIPPING POLICY</summary>
-              <p>{product.shipping}</p>
-            </details>
-            <details>
-              <summary>SHARE</summary>
-              <p>{product.share}</p>
-            </details>
+          <div className="mt-6">
+            <a className="is-size-7 has-text-grey mr-2" href="#">Shipping Policy</a> ·
+            <a className="is-size-7 has-text-grey ml-2" href="#">Return Info</a>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { SignedIn, SignedOut, UserProfile, useUser } from "@clerk/clerk-react";
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from "../lib/supabaseClient";
 import "../css/ClerkFullPage.css"
 
 const ClerkAccountPage = () => {

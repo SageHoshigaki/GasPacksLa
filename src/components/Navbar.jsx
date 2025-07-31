@@ -17,7 +17,7 @@ const Navbar = () => (
       <div className="navbar-item navbar-center">
         <Link to="/" className="navbar-item is-flex is-align-items-center is-justify-content-center">
           <img
-            src="/images/GPImages/gaspacksani.png"
+            src="/images/product/gaspacksani.png"
             alt="GasPacks Logo"
             className="logo-image"
           />

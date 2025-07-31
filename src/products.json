@@ -1,0 +1,82 @@
+[
+    {
+      "name": "E85",
+      "brand": "GasPacks",
+      "type": "Hybrid",
+      "thc": "27%",
+      "price": 45,
+      "weight": "3.5g",
+      "image_url": "/images/e85.jpg",
+      "description": "Premium hybrid with a sweet diesel finish."
+    },
+    {
+      "name": "405",
+      "brand": "GasPacks",
+      "type": "Indica",
+      "thc": "25%",
+      "price": 40,
+      "weight": "3.5g",
+      "image_url": "/images/405.jpg",
+      "description": "Heavy-hitting indica straight from the 405."
+    },
+    {
+      "name": "93",
+      "brand": "GasPacks",
+      "type": "Sativa",
+      "thc": "24%",
+      "price": 38,
+      "weight": "3.5g",
+      "image_url": "/images/93.jpg",
+      "description": "Old-school sativa with high-energy effects."
+    },
+    {
+      "name": "Ice Cream Sundaes",
+      "brand": "GasPacks",
+      "type": "Hybrid",
+      "thc": "30%",
+      "price": 50,
+      "weight": "3.5g",
+      "image_url": "/images/ice-cream-sundaes.jpg",
+      "description": "Sweet and creamy flavor with knockout potency."
+    },
+    {
+      "name": "Propane",
+      "brand": "GasPacks",
+      "type": "Indica",
+      "thc": "26%",
+      "price": 42,
+      "weight": "3.5g",
+      "image_url": "/images/propane.jpg",
+      "description": "Pure gas with a full-body melt."
+    },
+    {
+      "name": "Rainbow Cookies",
+      "brand": "GasPacks",
+      "type": "Hybrid",
+      "thc": "28%",
+      "price": 48,
+      "weight": "3.5g",
+      "image_url": "/images/rainbow-cookies.jpg",
+      "description": "Fruity terpene profile with colorful effects."
+    },
+    {
+      "name": "Lala Land",
+      "brand": "GasPacks",
+      "type": "Sativa",
+      "thc": "23%",
+      "price": 44,
+      "weight": "3.5g",
+      "image_url": "/images/lala-land.jpg",
+      "description": "Dreamy and uplifting cerebral high."
+    },
+    {
+      "name": "Couch Lour",
+      "brand": "GasPacks",
+      "type": "Indica",
+      "thc": "29%",
+      "price": 46,
+      "weight": "3.5g",
+      "image_url": "/images/couch-lour.jpg",
+      "description": "Couch-lock legend, known for ultimate relaxation."
+    }
+  ]

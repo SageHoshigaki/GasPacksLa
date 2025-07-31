@@ -11,6 +11,7 @@ import {
 import { motion } from "framer-motion";
 import { syncDispensariesOnce } from "../utils/syncOnce"; // ✅ make sure this exists
 
+
 const cardData = [
   {
     icon: faUsers,
