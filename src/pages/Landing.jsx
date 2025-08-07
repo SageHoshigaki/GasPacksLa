@@ -66,29 +66,29 @@ const LandingPage = () => {
       </section>
 
    
- <section className="h-screen">
+ <section className="h-screen -mb-60">
         <WeedHeroSection/>
 
       </section>
 
-<section className="h-screen">
-        <StorePickup/>
-      </section>
-    <section className="h-screen mb-60">
+
+    <section className="h-screen mb-60 -mt-20">
       <StrainFocus/>
     </section>
-
+<section className="h-screen">
+        <WeedCulture/>
+      </section>
        <section className="h-screen">
         <FeaturedStrainSection/>
       </section>
 
    <section className="h-screen">
-        <WeedCulture/>
+        <StorePickup/>
       </section>
 
      
      
-<SiteFooter/>
+
      
      
     </div>

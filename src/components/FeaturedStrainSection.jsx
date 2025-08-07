@@ -10,21 +10,21 @@ export default function FeaturedStrainSection() {
   const slides = [
     {
       img: "/images/product/405.png",
-      name: "Relax with\nRich Red Tea #3",
+      name: "Relax with\n 405",
       subtitle: "HYBRID",
-      desc: "Discover the complex aroma and sweet jam taste of Golden Eyebrows – a deservedly popular red tea!",
-    },
+      desc: "Earthy grape on the inhale, creamy vanilla on the exhale—405 melts stress without knocking you out."
+  },
     {
       img: "/images/product/93.png",
-      name: "Green Tea #4\nPerfect Start\nTo Your Day",
+      name: "93 \nPerfect Start\nTo Your Day",
       subtitle: "SATIVA",
-      desc: "Enjoy the refreshing taste of Green Tea with jasmine – a perfect blend to soothe your senses.",
+      desc: "Bright citrus and pine hit first, then a laser-focused uplift that makes morning tasks feel effortless.",
     },
     {
-      img: "/images/product/e85.png",
+      img: "/images/product/E85.png",
       name: "E-85 Full\nSpectrum Blend",
       subtitle: "HYBRID",
-      desc: "A balanced strain delivering smooth vibes with a sweet finish.",
+      desc: "Gelato sweetness meets diesel funk, delivering a smooth, euphoric body buzz that won’t glue you to the couch.",
     },
   ];
 

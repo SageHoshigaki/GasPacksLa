@@ -50,7 +50,7 @@ export default function StrainFocus() {
           {/* right image card */}
           <div className="relative h-[500px] w-full overflow-hidden rounded-[24px]">
             <img
-              src="/images/weedbud.jpg"
+              src="/images/shan.jpg"
               alt="Cultivating terpene-rich buds"
               className="h-full w-full object-cover"
             />

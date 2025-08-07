@@ -7,7 +7,7 @@ export default function WeedCulture() {
       className="relative h-screen w-full overflow-hidden"
       /* file lives in public/images → served from /images/santos.png */
       style={{
-        backgroundImage: 'url("/images/santos.jpg")',
+        backgroundImage: 'url("/images/girlssmoke.jpg")',
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
