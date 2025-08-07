@@ -1,0 +1,28 @@
+.custom-navbar {
+  background-color: transparent;
+  padding: 0.5rem 1rem;
+}
+
+.custom-link {
+  color: white !important;
+  font-weight: 500;
+}
+
+.custom-link:hover {
+  opacity: 0.8;
+}
+
+.logo-image {
+  max-height: 60px;
+}
+
+.navbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+.logo-image {
+  max-height: 280px !important; /* Increase from 60px to 100px */
+  width: auto;
+}

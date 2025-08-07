@@ -1,0 +1,48 @@
+/* Fullscreen wrapper still applied */
+.clerk-page-wrapper {
+  background-color: #000;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Status bar style */
+.status-bar {
+  color: white;
+  background-color: #111;
+  padding: 1rem 2rem;
+  font-weight: bold;
+  font-size: 1rem;
+  border-bottom: 1px solid #222;
+}
+
+/* Override to make the outer Clerk layout fill the screen */
+.cl-userProfile-root,
+.cl-userProfile-root .cl-card,
+.cl-userProfile-root .cl-cardBox,
+.cl-userProfile-root .cl-userProfile {
+  width: 100vw !important;
+  height: calc(100vh - 60px) !important;
+  max-width: 100% !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background-color: white !important;
+  padding: 0 !important;
+}
+
+/* ✨ Key Fix: Constrain internal profile section width */
+.cl-userProfile-root .cl-form,
+.cl-userProfile-root .cl-profileSection {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Optional: adjust heading or elements if needed */
+.cl-userProfile-root h1,
+.cl-userProfile-root h2,
+.cl-userProfile-root h3 {
+  color: #111;
+}

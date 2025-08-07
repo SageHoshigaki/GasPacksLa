@@ -1,0 +1,16 @@
+/* checkout.css */
+.checkout-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.is-sticky {
+  position: sticky;
+  top: 2rem;
+}
+
+input.input {
+  border-radius: 0;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+}

@@ -1,0 +1,12 @@
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  } /* track is 200 % wide */
+}
+
+.marquee {
+  animation: marquee 45s linear infinite; /* adjust 45 s for speed */
+}

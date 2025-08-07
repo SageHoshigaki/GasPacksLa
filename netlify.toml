@@ -1,0 +1,10 @@
+[functions]
+external_node_modules = ["multiparty", "jsonwebtoken"]
+directory = "netlify/functions"
+node_bundler = "esbuild"
+
+[[redirects]]
+from = "/api/clerk-webhook"
+to = "/.netlify/functions/clerk-webhook"
+status = 200
+# force deploy
