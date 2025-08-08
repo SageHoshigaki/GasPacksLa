@@ -1,20 +1,16 @@
-[build]
-  command = "npm run build"   # runs "vite build"
-  publish = "dist"            # Vite outputs here
-
+# netlify.toml (at repo root)
 [functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
-  external_node_modules = ["multiparty", "jsonwebtoken"]
+directory = "netlify/functions"
+node_bundler = "esbuild"
 
-# keep specific redirects FIRST so they aren't swallowed by the catch-all
+# 1 rule to cover every function
 [[redirects]]
-  from = "/api/clerk-webhook"
-  to   = "/.netlify/functions/clerk-webhook"
-  status = 200
+from = "/api/*"
+to   = "/.netlify/functions/:splat"
+status = 200
 
-# SPA catch-all for Vite/React Router
+# (put your SPA fallback LAST so it doesn't eat /api/*)
 [[redirects]]
-  from = "/*"
-  to   = "/index.html"
-  status = 200
+from = "/*"
+to   = "/index.html"
+status = 200
