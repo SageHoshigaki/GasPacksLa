@@ -1,10 +1,20 @@
-[functions]
-external_node_modules = ["multiparty", "jsonwebtoken"]
-directory = "netlify/functions"
-node_bundler = "esbuild"
+[build]
+  command = "npm run build"   # runs "vite build"
+  publish = "dist"            # Vite outputs here
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  external_node_modules = ["multiparty", "jsonwebtoken"]
+
+# keep specific redirects FIRST so they aren't swallowed by the catch-all
 [[redirects]]
-from = "/api/clerk-webhook"
-to = "/.netlify/functions/clerk-webhook"
-status = 200
-# force deploy
+  from = "/api/clerk-webhook"
+  to   = "/.netlify/functions/clerk-webhook"
+  status = 200
+
+# SPA catch-all for Vite/React Router
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200

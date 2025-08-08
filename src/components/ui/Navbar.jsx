@@ -33,7 +33,7 @@ export default function Navbar() {
     ].join(" ");
 
   const NAV_H = isLanding ? "h-20" : "h-16";       // 80 px vs 64 px
-  const LOGO_H = isLanding ? "h-[180px]" : "h-12";  // 80 px vs 48 px
+  const LOGO_H = isLanding ? "h-[280px]" : "h-12";  // 80 px vs 48 px
 
   const shellCls = [
     "fixed top-0 left-0 right-0 z-50 text-white will-change-backdrop-filter",
@@ -69,7 +69,7 @@ export default function Navbar() {
             </div>
 
             {/* ---------- Center Logo ---------- */}
-            <div className="flex justify-center flex-1 md:flex-none">
+            <div className="flex -mb-15 justify-center flex-1 md:flex-none">
               <Link to="/" aria-label="GasPacks Home" className="block">
                 <img
                   src="/images/product/gaspacksani.png"
