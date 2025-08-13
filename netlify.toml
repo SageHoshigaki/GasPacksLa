@@ -1,16 +1,17 @@
-# netlify.toml (at repo root)
+# netlify.toml (repo root)
+
 [functions]
-directory = "netlify/functions"
-node_bundler = "esbuild"
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
 
-# 1 rule to cover every function
+# Proxy all /api/* to Netlify Functions
 [[redirects]]
-from = "/api/*"
-to   = "/.netlify/functions/:splat"
-status = 200
+  from = "/api/*"
+  to   = "/.netlify/functions/:splat"
+  status = 200
 
-# (put your SPA fallback LAST so it doesn't eat /api/*)
+# SPA fallback (keep this LAST)
 [[redirects]]
-from = "/*"
-to   = "/index.html"
-status = 200g
+  from = "/*"
+  to   = "/index.html"
+  status = 200
