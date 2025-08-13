@@ -1,3 +1,4 @@
+// src/pages/CheckoutPage.jsx
 import { useMemo, useState } from "react";
 import Navbar from "../components/ui/Navbar";
 import { useCart } from "../context/CartContext";
@@ -6,8 +7,14 @@ function money(n) {
   return `$${Number(n || 0).toFixed(2)}`;
 }
 
+// Change this if you need to point at a different origin in dev:
+// For local `netlify dev`, leave blank (relative) or set to "http://localhost:8888/.netlify/functions"
+// For Vite-only dev (no netlify dev), set VITE_FUNCTIONS_BASE to your deployed site origin + "/.netlify/functions"
+const FN_BASE =
+  import.meta.env.VITE_FUNCTIONS_BASE?.replace(/\/$/, "") || "/.netlify/functions";
+
 export default function CheckoutPage() {
-  const { cart = [], subtotal } = useCart();
+  const { cart = [], subtotal = 0 } = useCart();
 
   // Contact
   const [email, setEmail] = useState("");
@@ -33,7 +40,7 @@ export default function CheckoutPage() {
   const [couponMsg, setCouponMsg] = useState("");
   const [discount, setDiscount] = useState(0);
 
-  const shipping = 0; // compute later if needed
+  const shipping = 0;
   const rawTotal = subtotal + shipping;
   const orderTotal = Math.max(rawTotal - discount, 0);
   const totalLabel = useMemo(() => money(orderTotal), [orderTotal]);
@@ -72,11 +79,9 @@ export default function CheckoutPage() {
       const addressSummary =
         fulfillment === "pickup"
           ? `Pickup @ ${pickupLocation}`
-          : `${name || ""} | ${address1}${
-              address2 ? ", " + address2 : ""
-            }, ${city}, ${state} ${zip}, ${country}`;
+          : `${name || ""} | ${address1}${address2 ? ", " + address2 : ""}, ${city}, ${state} ${zip}, ${country}`;
 
-      const res = await fetch("/.netlify/functions/create-invoice", {
+      const res = await fetch(`${FN_BASE}/create-invoice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -102,11 +107,20 @@ export default function CheckoutPage() {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to create invoice");
-      if (!data.invoice_url) throw new Error("Invoice URL missing");
+      // Graceful parse (404 HTML, empty body, etc.)
+      const contentType = res.headers.get("content-type") || "";
+      const payload = contentType.includes("application/json")
+        ? await res.json()
+        : await res.text();
 
-      window.location.href = data.invoice_url;
+      if (!res.ok) {
+        const msg = typeof payload === "string" ? payload : payload?.error || "Failed to create invoice";
+        throw new Error(msg);
+      }
+      const invoiceUrl = (typeof payload === "string" ? null : payload?.invoice_url) || null;
+      if (!invoiceUrl) throw new Error("Invoice URL missing");
+
+      window.location.href = invoiceUrl;
     } catch (e) {
       setErr(e.message || "Something went wrong.");
     } finally {
