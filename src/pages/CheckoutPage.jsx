@@ -10,9 +10,8 @@ function money(n) {
 // Change this if you need to point at a different origin in dev:
 // For local `netlify dev`, leave blank (relative) or set to "http://localhost:8888/.netlify/functions"
 // For Vite-only dev (no netlify dev), set VITE_FUNCTIONS_BASE to your deployed site origin + "/.netlify/functions"
-const FN_BASE =
-  import.meta.env.VITE_FUNCTIONS_BASE?.replace(/\/$/, "") || "/.netlify/functions";
-
+const FN_BASE ="https://gas-packs.com/.netlify/functions";
+  
 export default function CheckoutPage() {
   const { cart = [], subtotal = 0 } = useCart();
 
