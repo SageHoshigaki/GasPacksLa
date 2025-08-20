@@ -32,7 +32,6 @@ export const handler = async (event) => {
     const payload = {
       price_amount,
       price_currency: body.price_currency || "usd",
-      pay_currency: body.pay_currency || "usdt",
       order_id: String(body.order_id || `order_${Date.now()}`),
       order_description: String(body.order_description || "Order").slice(
         0,
