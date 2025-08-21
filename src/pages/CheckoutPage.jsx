@@ -7,11 +7,10 @@ function money(n) {
   return `$${Number(n || 0).toFixed(2)}`;
 }
 
-// Change this if you need to point at a different origin in dev:
-// For local `netlify dev`, leave blank (relative) or set to "http://localhost:8888/.netlify/functions"
-// For Vite-only dev (no netlify dev), set VITE_FUNCTIONS_BASE to your deployed site origin + "/.netlify/functions"
-const FN_BASE ="https://gas-packs.com/.netlify/functions";
-  
+// For prod demo you can hardcode your origin.
+// For local `netlify dev`, you can switch this to relative: "/.netlify/functions"
+const FN_BASE = "https://gas-packs.com/.netlify/functions";
+
 export default function CheckoutPage() {
   const { cart = [], subtotal = 0 } = useCart();
 
@@ -19,7 +18,7 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState("");
   const [subscribe, setSubscribe] = useState(false);
 
-  // Fulfillment: "ship" | "pickup"
+  // Fulfillment
   const [fulfillment, setFulfillment] = useState("ship");
 
   // Shipping address fields
@@ -39,11 +38,16 @@ export default function CheckoutPage() {
   const [couponMsg, setCouponMsg] = useState("");
   const [discount, setDiscount] = useState(0);
 
+  // Totals
   const shipping = 0;
   const rawTotal = subtotal + shipping;
-  const orderTotal = Math.max(rawTotal - discount, 0);
+  const orderTotal = useMemo(
+    () => Math.max(rawTotal - discount, 0),
+    [rawTotal, discount]
+  );
   const totalLabel = useMemo(() => money(orderTotal), [orderTotal]);
 
+  // Visual-only currency chips (do not force pay_currency for invoice API)
   const [payCurrency, setPayCurrency] = useState("usdt"); // "usdt" | "btc" | "eth"
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -86,40 +90,47 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           price_amount: Number(orderTotal.toFixed(2)),
           price_currency: "usd",
-          pay_currency: payCurrency,
+          // ✅ Do NOT include pay_currency — invoice shows all enabled coins
           order_id: `order_${Date.now()}`,
           order_description: `${orderDescription} | Fulfillment: ${fulfillment.toUpperCase()} | ${addressSummary}`,
+          // ✅ Only email is allowed for invoice; do NOT send customer_name
           customer_email: email || undefined,
-          customer_name: name || undefined,
-          metadata: {
-            items: cart,
-            newsletter_opt_in: subscribe,
-            fulfillment,
-            address:
-              fulfillment === "ship"
-                ? { name, address1, address2, city, state, zip, country }
-                : null,
-            pickup_location: fulfillment === "pickup" ? pickupLocation : null,
-            coupon: coupon || null,
-            discount: Number(discount.toFixed(2)),
-          },
+          // ❌ metadata not supported by /v1/invoice
         }),
       });
 
-      // Graceful parse (404 HTML, empty body, etc.)
       const contentType = res.headers.get("content-type") || "";
-      const payload = contentType.includes("application/json")
-        ? await res.json()
-        : await res.text();
+      const payload =
+        contentType.includes("application/json")
+          ? await res.json()
+          : await res.text();
 
       if (!res.ok) {
-        const msg = typeof payload === "string" ? payload : payload?.error || "Failed to create invoice";
+        const msg =
+          typeof payload === "string"
+            ? payload
+            : payload?.message || payload?.error || "Failed to create invoice";
         throw new Error(msg);
       }
-      const invoiceUrl = (typeof payload === "string" ? null : payload?.invoice_url) || null;
-      if (!invoiceUrl) throw new Error("Invoice URL missing");
 
-      window.location.href = invoiceUrl;
+      // Expecting { id, invoice_url, ... }
+    // Expect our function to return { invoice_url }
+let invoiceUrl = null;
+
+if (typeof payload === "string") {
+  try { invoiceUrl = JSON.parse(payload)?.invoice_url || null; } catch {}
+} else {
+  invoiceUrl = payload?.invoice_url || null;
+}
+
+if (!invoiceUrl) {
+  throw new Error(
+    "Invoice URL missing. Details: " +
+      (typeof payload === "string" ? payload : JSON.stringify(payload))
+  );
+}
+
+window.location.href = invoiceUrl;
     } catch (e) {
       setErr(e.message || "Something went wrong.");
     } finally {
@@ -313,8 +324,7 @@ export default function CheckoutPage() {
                   <option>Miami – Wynwood</option>
                 </select>
                 <p className="text-xs text-neutral-400 mt-3">
-                  You’ll receive a confirmation email with pickup instructions and ID
-                  requirements.
+                  You’ll receive a confirmation email with pickup instructions and ID requirements.
                 </p>
               </div>
             )}

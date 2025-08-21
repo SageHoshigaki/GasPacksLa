@@ -8,11 +8,13 @@ const cors = (statusCode, body) => ({
     "Access-Control-Allow-Origin": OK_ORIGINS,
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
+    "Content-Type": "application/json",
   },
   body: typeof body === "string" ? body : JSON.stringify(body),
 });
 
 export const handler = async (event) => {
+  // CORS preflight
   if (event.httpMethod === "OPTIONS") return cors(200, "OK");
   if (event.httpMethod !== "POST")
     return cors(405, { error: "Method not allowed" });
@@ -26,12 +28,15 @@ export const handler = async (event) => {
 
     // Basic validation / normalization
     const price_amount = Number(body.price_amount);
-    if (!price_amount || price_amount <= 0)
+    if (!price_amount || price_amount <= 0) {
       return cors(400, { error: "Invalid price_amount" });
+    }
 
+    // Build payload for NOWPayments /v1/invoice
+    // NOTE: Do NOT include `metadata` and do NOT force `pay_currency`
     const payload = {
       price_amount,
-      price_currency: body.price_currency || "usd",
+      price_currency: String(body.price_currency || "usd").toLowerCase(),
       order_id: String(body.order_id || `order_${Date.now()}`),
       order_description: String(body.order_description || "Order").slice(
         0,
@@ -39,11 +44,9 @@ export const handler = async (event) => {
       ),
       customer_email: body.customer_email || undefined,
       customer_name: body.customer_name || undefined,
-      // point to your site so the flow looks finished
       ipn_callback_url: "https://gas-packs.com/api/np-ipn",
       success_url: "https://gas-packs.com/success",
       cancel_url: "https://gas-packs.com/cancel",
-      // 🚫 metadata is NOT allowed by /v1/invoice
     };
 
     const resp = await fetch("https://api.nowpayments.io/v1/invoice", {
@@ -55,15 +58,35 @@ export const handler = async (event) => {
       body: JSON.stringify(payload),
     });
 
-    const ct = resp.headers.get("content-type") || "";
-    const data = ct.includes("application/json")
+    const contentType = resp.headers.get("content-type") || "";
+    const data = contentType.includes("application/json")
       ? await resp.json()
       : await resp.text();
 
-    if (!resp.ok) return cors(resp.status, data); // bubble up NOWPayments error body
+    // If NOWPayments returns an error, bubble it up as-is
+    if (!resp.ok) return cors(resp.status, data);
 
-    // data typically includes { id, invoice_url, ... }
-    return cors(200, { invoice_url: data?.invoice_url || null });
+    // Normalize response to { invoice_url }
+    let invoiceUrl = null;
+    if (data && typeof data === "object" && data.invoice_url) {
+      invoiceUrl = data.invoice_url;
+    } else if (typeof data === "string") {
+      try {
+        const parsed = JSON.parse(data);
+        if (parsed && parsed.invoice_url) invoiceUrl = parsed.invoice_url;
+      } catch {
+        // leave null
+      }
+    }
+
+    if (!invoiceUrl) {
+      return cors(502, {
+        error: "NOWPayments response did not include invoice_url",
+        raw: data,
+      });
+    }
+
+    return cors(200, { invoice_url: invoiceUrl });
   } catch (err) {
     return cors(500, { error: err?.message || "Internal error" });
   }
