@@ -12,16 +12,16 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const isLanding = pathname === "/";
 
-  /* ---------------- scroll effect ---------------- */
+  /* ---------------- scroll shadow / blur ---------------- */
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 2);
     onScroll();
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* ---------------- mobile menu ---------------- */
+  /* ---------------- mobile menu state ---------------- */
   const [mobileOpen, setMobileOpen] = useState(false);
 
   /* ---------------- derived values ---------------- */
@@ -31,49 +31,47 @@ export default function Navbar() {
     [
       "relative text-sm font-medium text-white/90 hover:text-white transition-colors",
       "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20 rounded",
-      "after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:bg-white after:transition-all after:duration-300",
+      "after:pointer-events-none after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:bg-white after:transition-[width] after:duration-300",
       isActive ? "after:w-full" : "after:w-0 hover:after:w-full",
     ].join(" ");
 
-  const NAV_H = isLanding ? "h-20" : "h-16";
+  const NAV_H = isLanding ? "h-20" : "h-16"; 
   const LOGO_H = isLanding ? "h-[280px]" : "h-12";
 
   const shellCls = [
     "fixed top-0 left-0 right-0 z-50 text-white will-change-backdrop-filter",
-    (!isLanding || scrolled)
+    !isLanding || scrolled
       ? "bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/70 shadow-sm shadow-black/20"
       : "bg-transparent",
   ].join(" ");
 
-  /* ============================================================
-     =============== RETURN JSX ==================================
-     ============================================================ */
   return (
     <>
-      <nav className={shellCls} aria-label="Main">
+      <nav className={shellCls} role="navigation" aria-label="Main">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className={`flex items-center justify-between ${NAV_H}`}>
-
-            {/* ---------- LEFT (desktop links) ---------- */}
+            
+            {/* ---------- Left Links (desktop) ---------- */}
             <div className="hidden md:flex items-center gap-6">
               <NavLink to="/shop" className={linkCls}>Shop</NavLink>
               <NavLink to="/" end className={linkCls}>Gallery</NavLink>
             </div>
 
-            {/* ---------- MOBILE HAMBURGER ---------- */}
+            {/* ---------- Mobile Hamburger ---------- */}
             <div className="md:hidden">
               <button
+                type="button"
                 aria-label={mobileOpen ? "Close menu" : "Open menu"}
-                onClick={() => setMobileOpen(v => !v)}
-                className="inline-flex items-center p-2 text-white/90 hover:text-white focus:outline-none"
+                className="inline-flex items-center p-2 text-white/90 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded"
+                onClick={() => setMobileOpen((v) => !v)}
               >
                 {mobileOpen ? (
-                  // X ICON
+                  // X Icon
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M6.225 4.811 4.811 6.225 10.586 12l-5.775 5.775 1.414 1.414L12 13.414l5.775 5.775 1.414-1.414L13.414 12l5.775-5.775-1.414-1.414L12 10.586 6.225 4.811z" />
+                    <path d="M6.225 4.811 4.811 6.225 12 13.414l7.189-7.189-1.414-1.414L12 10.586l-5.775-5.775z" />
                   </svg>
                 ) : (
-                  // HAMBURGER
+                  // Hamburger Icon
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z" />
                   </svg>
@@ -81,7 +79,7 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* ---------- CENTER LOGO ---------- */}
+            {/* ---------- Center Logo ---------- */}
             <div className="flex -mb-15 justify-center flex-1 md:flex-none">
               <Link to="/" aria-label="GasPacks Home" className="block">
                 <img
@@ -93,19 +91,23 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* ---------- RIGHT (desktop) ---------- */}
+            {/* ---------- Right Links (desktop) ---------- */}
             <div className="hidden md:flex items-center gap-6">
               <NavLink to="/locator" className={linkCls}>Stores</NavLink>
               <NavLink to="/account" className={linkCls}>Account</NavLink>
 
               <button
                 aria-label="Open cart"
+                className="relative inline-flex items-center text-white hover:opacity-90 transition"
+                style={{ background: "none", border: "none", padding: 0 }}
                 onClick={() => toggleCart(true)}
-                className="relative inline-flex items-center text-white hover:opacity-90"
               >
                 <FontAwesomeIcon icon={faBagShopping} size="lg" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 min-w-[1.25rem] h-5 px-1 rounded-full bg-white text-black text-[11px] leading-5 text-center font-semibold">
+                  <span
+                    aria-label={`${cartCount} items in cart`}
+                    className="absolute -top-2 -right-2 min-w-[1.25rem] h-5 px-1 rounded-full bg-white text-black text-[11px] leading-5 text-center font-semibold"
+                  >
                     {cartCount}
                   </span>
                 )}
@@ -114,21 +116,24 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* ======================================================
-            ============ FULL-SCREEN MOBILE OVERLAY =============
-            ====================================================== */}
+        {/* ========================================================= */}
+        {/* 🔥 FULLSCREEN MOBILE MENU (CANNOT BE BLOCKED)             */}
+        {/* ========================================================= */}
         {mobileOpen && (
-          <div className="
-            fixed inset-0 z-[999] md:hidden
-            bg-black
-            flex flex-col
-            pt-28 pb-12 px-8
-            space-y-10
-          ">
-            {/* Close button */}
+          <div
+            className="
+              fixed inset-0 
+              z-[999999] 
+              bg-black 
+              flex flex-col 
+              pt-28 pb-10 px-8 
+              space-y-10
+              overflow-y-auto
+            "
+          >
+            {/* Close Button */}
             <button
               onClick={() => setMobileOpen(false)}
-              aria-label="Close menu"
               className="absolute top-6 right-6 text-white/80 hover:text-white transition"
             >
               <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
@@ -136,7 +141,6 @@ export default function Navbar() {
               </svg>
             </button>
 
-            {/* Mobile Nav Links */}
             <NavLink
               to="/shop"
               onClick={() => setMobileOpen(false)}
@@ -183,7 +187,7 @@ export default function Navbar() {
         )}
       </nav>
 
-      {/* Push content below nav */}
+      {/* push page content down by nav height when not landing */}
       {!isLanding && <div className={NAV_H} />}
     </>
   );

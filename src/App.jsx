@@ -11,7 +11,7 @@ import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import "./index.css";
 
 /* ── Shared UI ──────────────────── */
-
+import Navbar from "./components/ui/Navbar";
 import Footer from "./components/ui/SiteFooter";
 import CartDrawer from "./components/bag/CartDrawer";
 
@@ -105,6 +105,7 @@ export default function App() {
   return (
     <Router>
             {/* persistent header */}
+      <Navbar/>
       <CartDrawer />    {/* off-canvas cart, also persistent */}
       <AnimatedRoutes />
       <SiteFooter />        {/* persistent footer */}
