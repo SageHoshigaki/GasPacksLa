@@ -12,8 +12,8 @@ import "./index.css";
 
 /* ── Shared UI ──────────────────── */
 import Navbar from "./components/ui/Navbar";
-import Footer from "./components/ui/SiteFooter";
 import CartDrawer from "./components/bag/CartDrawer";
+import SiteFooter from "./components/ui/SiteFooter";
 
 /* ── Pages ───────────────────────── */
 import Home from "./pages/Landing";
@@ -23,6 +23,8 @@ import AccountDashboard from "./components/ecommerce/AccountDashboard";
 import Locator from "./pages/DispensaryLocator";
 import AdminDashboard from "./pages/AdminDashboard";
 import CheckoutPage from "./pages/CheckoutPage";
+import OrderSuccess from "./pages/OrderSuccess";
+import OrderCancel from "./pages/OrderCancel";
 import TailwindTest from "./pages/TailwindTest";
 
 /* ── Auth pages ─────────────────── */
@@ -32,7 +34,6 @@ import SsoCallback from "./pages/auth/SsoCallback";
 
 /* ── FX ─────────────────────────── */
 import PageTransition from "./components/PageTransition";
-import SiteFooter from "./components/ui/SiteFooter";
 
 /* ── Auth gate helper ───────────── */
 function Protected({ children }) {
@@ -59,7 +60,7 @@ function AnimatedRoutes() {
       const id = setTimeout(() => {
         setPath(location.pathname);
         setShowFx(false);
-      }, 1600); // sync with PageTransition length
+      }, 1600);
       return () => clearTimeout(id);
     }
   }, [location, path]);
@@ -73,6 +74,8 @@ function AnimatedRoutes() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/locator" element={<Locator />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/success" element={<OrderSuccess />} />
+        <Route path="/cancel" element={<OrderCancel />} />
         <Route path="/test" element={<TailwindTest />} />
 
         <Route path="/sign-in" element={<CustomSignIn />} />
@@ -104,11 +107,10 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <Router>
-            {/* persistent header */}
-      <Navbar/>
-      <CartDrawer />    {/* off-canvas cart, also persistent */}
+      <Navbar />
+      <CartDrawer />
       <AnimatedRoutes />
-      <SiteFooter />        {/* persistent footer */}
+      <SiteFooter />
     </Router>
   );
 }

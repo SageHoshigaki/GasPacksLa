@@ -7,7 +7,8 @@ export const CartUIProvider = ({ children }) => {
 
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
-  const toggleCart = () => setIsCartOpen(prev => !prev); // ✅ Add this
+  const toggleCart = (force) =>
+    setIsCartOpen((prev) => (typeof force === "boolean" ? force : !prev));
 
   return (
     <CartUIContext.Provider value={{ isCartOpen, openCart, closeCart, toggleCart }}>
@@ -18,8 +19,6 @@ export const CartUIProvider = ({ children }) => {
 
 export const useCartUI = () => {
   const context = useContext(CartUIContext);
-  if (!context) {
-    throw new Error("useCartUI must be used within a CartUIProvider");
-  }
+  if (!context) throw new Error("useCartUI must be used within a CartUIProvider");
   return context;
 };

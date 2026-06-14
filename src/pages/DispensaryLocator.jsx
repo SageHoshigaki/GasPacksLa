@@ -1,15 +1,28 @@
 // src/pages/DispensaryLocator.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  LoadScript,
+  Marker,
+  Autocomplete,
+} from "@react-google-maps/api";
 import { supabase } from "../lib/supabaseClient";
 
+/* Google Places library for autocomplete */
+const libraries = ["places"];
 
 /* map box */
 const mapContainerStyle = {
   width: "100%",
   height: "50vh",
-  borderRadius: "16px",
+  borderRadius: "28px",
+};
+
+/* fallback center: NYC */
+const defaultCenter = {
+  lat: 40.7128,
+  lng: -74.006,
 };
 
 /* miles calc */
@@ -17,237 +30,499 @@ const miles = (la1, lo1, la2, lo2) => {
   const R = 3958.8;
   const dLat = ((la2 - la1) * Math.PI) / 180;
   const dLon = ((lo2 - lo1) * Math.PI) / 180;
+
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos((la1 * Math.PI) / 180) *
       Math.cos((la2 * Math.PI) / 180) *
       Math.sin(dLon / 2) ** 2;
+
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+const mapOptions = {
+  mapTypeControl: false,
+  streetViewControl: false,
+  fullscreenControl: false,
+  clickableIcons: false,
+  gestureHandling: "greedy",
 };
 
 export default function DispensaryLocator() {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-  const [query, setQuery]       = useState("");
-  const [disp, setDisp]         = useState([]);
+  const [query, setQuery] = useState("");
+  const [allDispensaries, setAllDispensaries] = useState([]);
+  const [disp, setDisp] = useState([]);
   const [searched, setSearched] = useState(false);
-  const [loc, setLoc]           = useState(null);
-  const [busy, setBusy]         = useState(false);
+  const [loc, setLoc] = useState(defaultCenter);
+  const [userLoc, setUserLoc] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [autocomplete, setAutocomplete] = useState(null);
 
-  /* geocode */
+  /* geocode address */
   const geocode = async (addr) => {
-    const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-        addr
-      )}&key=${apiKey}`
-    );
-    const j = await res.json();
-    return j.results?.[0]?.geometry?.location ?? null;
+    if (!addr || !apiKey) return null;
+
+    try {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          addr
+        )}&key=${apiKey}`
+      );
+
+      const json = await res.json();
+
+      if (json.status !== "OK") {
+        console.warn("Geocode failed:", json.status, json.error_message);
+        return null;
+      }
+
+      return json.results?.[0]?.geometry?.location ?? null;
+    } catch (error) {
+      console.error("Geocode error:", error);
+      return null;
+    }
   };
 
-  /* supabase search */
-  const sbSearch = async (term) => {
-    const { data } = await supabase
-      .from("Dispensaries")
-      .select("*")
-      .ilike("address", `%${term}%`);
-    if (!data?.length) return [];
+  /* load all dispensaries from Supabase */
+  const loadDispensaries = async () => {
+    const { data, error } = await supabase.from("Dispensaries").select("*");
+
+    if (error) {
+      console.error("Dispensaries error:", error);
+      setMessage("Could not load dispensaries right now.");
+      return [];
+    }
+
+    if (!data?.length) {
+      setMessage("No dispensaries are currently listed.");
+      return [];
+    }
 
     const enriched = await Promise.all(
-      data.map(async (s) => {
-        const g = await geocode(s.address);
-        return g ? { ...s, lat: g.lat, lng: g.lng } : null;
+      data.map(async (store) => {
+        /*
+          If you add lat/lng columns to Supabase later,
+          this uses them and avoids extra Google geocoding.
+        */
+        if (store.lat && store.lng) {
+          return {
+            ...store,
+            lat: Number(store.lat),
+            lng: Number(store.lng),
+          };
+        }
+
+        /*
+          Otherwise, geocode the address stored in Supabase.
+          Your table must have an address column.
+        */
+        const geo = await geocode(store.address);
+
+        if (!geo) return null;
+
+        return {
+          ...store,
+          lat: geo.lat,
+          lng: geo.lng,
+        };
       })
     );
-    return enriched.filter(Boolean);
+
+    const cleanStores = enriched.filter(Boolean);
+
+    setAllDispensaries(cleanStores);
+    return cleanStores;
   };
 
-  /* auto-locate */
+  /* filter nearby stores */
+  const getNearbyStores = (stores, centerPoint, radius = 35) => {
+    if (!centerPoint || !stores?.length) return [];
+
+    return stores
+      .map((store) => ({
+        ...store,
+        distance: miles(centerPoint.lat, centerPoint.lng, store.lat, store.lng),
+      }))
+      .filter((store) => store.distance <= radius)
+      .sort((a, b) => a.distance - b.distance);
+  };
+
+  /* initial load */
   useEffect(() => {
-    if (!apiKey || !navigator.geolocation) return;
+    if (!apiKey) return;
 
-    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
-      const here = { lat: coords.latitude, lng: coords.longitude };
-      setLoc(here);
+    const init = async () => {
+      setBusy(true);
 
-      const { data } = await supabase.from("Dispensaries").select("*");
-      if (!data?.length) return;
+      const stores = await loadDispensaries();
 
-      const enriched = await Promise.all(
-        data.map(async (s) => {
-          const g = await geocode(s.address);
-          return g ? { ...s, lat: g.lat, lng: g.lng } : null;
-        })
+      /*
+        Show all stores immediately if no location permission yet.
+        This prevents the page from looking empty even if geolocation is denied.
+      */
+      setDisp(stores);
+      setSearched(false);
+      setBusy(false);
+
+      if (!navigator.geolocation) {
+        setMessage("Search by ZIP, city, or state to find nearby stores.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          const here = {
+            lat: coords.latitude,
+            lng: coords.longitude,
+          };
+
+          setUserLoc(here);
+          setLoc(here);
+
+          const nearby = getNearbyStores(stores, here, 35);
+
+          setDisp(nearby.length ? nearby : stores);
+          setSearched(true);
+
+          if (!nearby.length) {
+            setMessage(
+              "No stores found near your current location. Showing all listed locations."
+            );
+          } else {
+            setMessage("");
+          }
+        },
+        () => {
+          setMessage("Location access was not enabled. Search manually instead.");
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 8000,
+          maximumAge: 1000 * 60 * 5,
+        }
       );
+    };
 
-      setDisp(
-        enriched
-          .filter(Boolean)
-          .filter((s) => miles(here.lat, here.lng, s.lat, s.lng) <= 20)
-      );
-      setSearched(true);
-    });
+    init();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiKey]);
 
-  /* manual search */
+  /* manual search using typed text */
   const handleSearch = async () => {
-    if (!query.trim()) return;
+    const cleanQuery = query.trim();
+
+    if (!cleanQuery) {
+      setMessage("Enter a ZIP, city, or state to search.");
+      return;
+    }
+
     setBusy(true);
-    const res = await sbSearch(query.trim());
-    setDisp(res);
+    setMessage("");
+
+    const searchLoc = await geocode(cleanQuery);
+
+    if (!searchLoc) {
+      setBusy(false);
+      setSearched(true);
+      setDisp([]);
+      setMessage("Could not find that location. Try a ZIP code or city name.");
+      return;
+    }
+
+    const stores =
+      allDispensaries.length > 0 ? allDispensaries : await loadDispensaries();
+
+    const nearby = getNearbyStores(stores, searchLoc, 35);
+
+    setLoc(searchLoc);
+    setDisp(nearby);
     setSearched(true);
-    res.length && setLoc({ lat: res[0].lat, lng: res[0].lng });
     setBusy(false);
+
+    if (!nearby.length) {
+      setMessage("No dispensaries found near that area.");
+    }
   };
 
-  /* key check */
-  if (!apiKey)
-    return (
+  /* autocomplete place select */
+  const handlePlaceChanged = async () => {
+    if (!autocomplete) return;
 
-      <section className="h-screen grid place-content-center bg-black text-white px-4">
-        
-         
-        
-        <p className="max-w-md text-center">
-          <span className="font-semibold">Google Maps key missing.</span>
-          Add <code className="font-mono">VITE_GOOGLE_MAPS_API_KEY</code> to
-          <code>.env</code> and restart.
-        </p>
-      </section>
+    const place = autocomplete.getPlace();
+    const placeLocation = place?.geometry?.location;
+
+    if (!placeLocation) return;
+
+    const selectedLoc = {
+      lat: placeLocation.lat(),
+      lng: placeLocation.lng(),
+    };
+
+    const selectedLabel =
+      place.formatted_address || place.name || query || "Selected location";
+
+    setQuery(selectedLabel);
+    setLoc(selectedLoc);
+    setBusy(true);
+    setMessage("");
+
+    const stores =
+      allDispensaries.length > 0 ? allDispensaries : await loadDispensaries();
+
+    const nearby = getNearbyStores(stores, selectedLoc, 35);
+
+    setDisp(nearby);
+    setSearched(true);
+    setBusy(false);
+
+    if (!nearby.length) {
+      setMessage("No dispensaries found near that area.");
+    }
+  };
+
+  const resultCountLabel = useMemo(() => {
+    if (busy) return "Searching locations";
+    if (searched) return `${disp.length} location${disp.length === 1 ? "" : "s"} found`;
+    return `${disp.length} listed location${disp.length === 1 ? "" : "s"}`;
+  }, [busy, searched, disp.length]);
+
+  if (!apiKey) {
+    return (
+      <main className="min-h-screen bg-black text-white">
+        <section className="grid min-h-screen place-content-center px-4 pt-32">
+          <div className="max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 text-center">
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.32em] text-white/35">
+              Configuration Needed
+            </p>
+
+            <h1 className="text-3xl font-semibold tracking-[-0.05em] text-white">
+              Google Maps key missing.
+            </h1>
+
+            <p className="mt-4 text-sm leading-7 text-white/50">
+              Add{" "}
+              <code className="rounded bg-white/10 px-2 py-1 font-mono text-white">
+                VITE_GOOGLE_MAPS_API_KEY
+              </code>{" "}
+              to your{" "}
+              <code className="rounded bg-white/10 px-2 py-1 font-mono text-white">
+                .env
+              </code>{" "}
+              and restart the dev server.
+            </p>
+          </div>
+        </section>
+      </main>
     );
+  }
 
   return (
-    <LoadScript googleMapsApiKey={apiKey}>
-      {/* changed h-screen → min-h-screen */}
-      <section className="min-h-screen flex flex-col bg-black text-white">
-        <div className="flex-1 flex flex-col w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <h1 className="text-[clamp(3rem,8vw,5.5rem)] font-semibold text-center leading-none mb-16">
-            Find Nearby Dispensaries
-          </h1>
+    <LoadScript googleMapsApiKey={apiKey} libraries={libraries}>
+      <main className="min-h-screen overflow-hidden bg-black text-white">
+        {/* background atmosphere */}
+        <div className="pointer-events-none fixed inset-0 z-0">
+          <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-white/[0.035] blur-[140px]" />
+          <div className="absolute bottom-[-180px] right-[-120px] h-[520px] w-[520px] rounded-full bg-[#f4efe8]/[0.05] blur-[150px]" />
+        </div>
 
-          {loc && (
-            <div className="mb-8 rounded-2xl overflow-hidden ring-1 ring-white/10">
-              <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                center={loc}
-                zoom={12}
-                options={{
-                  mapTypeControl: false,
-                  streetViewControl: false,
-                  fullscreenControl: false,
-                }}
-              >
-                <Marker position={loc} label="You" />
-                {disp.map((d) => (
-                  <Marker key={d.id} position={{ lat: d.lat, lng: d.lng }} label={d.name} />
+        <section className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-32 sm:px-6 lg:px-8">
+          {/* 1. HEADING */}
+          <div className="mb-10 text-center">
+            <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.38em] text-white/35">
+              GasPacks Locator
+            </p>
+
+            <h1 className="mx-auto max-w-5xl text-[clamp(3rem,8vw,5.5rem)] font-semibold leading-none tracking-[-0.08em] text-white">
+              Find Nearby Dispensaries
+            </h1>
+
+            <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-white/45">
+              Search your area and find nearby GasPacks locations with maps,
+              directions, and store details.
+            </p>
+          </div>
+
+          {/* 2. MAP */}
+          <div className="mb-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] p-2 shadow-[0_35px_120px_rgba(0,0,0,0.45)]">
+            <GoogleMap
+              mapContainerStyle={mapContainerStyle}
+              center={loc}
+              zoom={disp.length ? 12 : 10}
+              options={mapOptions}
+            >
+              {userLoc && <Marker position={userLoc} label="You" />}
+
+              {disp
+                .filter((d) => d.lat && d.lng)
+                .map((d) => (
+                  <Marker
+                    key={d.id}
+                    position={{ lat: d.lat, lng: d.lng }}
+                    label={d.name}
+                  />
                 ))}
-              </GoogleMap>
+            </GoogleMap>
+          </div>
+
+          {/* 3. SEARCH WITH GOOGLE PLACES AUTOCOMPLETE */}
+          <div className="mx-auto mb-8 max-w-3xl rounded-[2rem] border border-white/10 bg-white/[0.035] p-3 shadow-[0_30px_100px_rgba(0,0,0,0.35)]">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex-1">
+                <Autocomplete
+                  onLoad={(auto) => setAutocomplete(auto)}
+                  onPlaceChanged={handlePlaceChanged}
+                  options={{
+                    fields: ["geometry", "formatted_address", "name"],
+                    types: ["geocode"],
+                    componentRestrictions: { country: "us" },
+                  }}
+                >
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSearch();
+                    }}
+                    placeholder="Enter ZIP, City, or State"
+                    className="min-h-14 w-full rounded-[1.35rem] border border-white/10 bg-black/40 px-5 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-white/25 focus:bg-black/60"
+                  />
+                </Autocomplete>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSearch}
+                disabled={busy}
+                className="min-h-14 rounded-[1.35rem] bg-white px-7 text-[11px] font-bold uppercase tracking-[0.26em] text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {busy ? "Searching" : "Search"}
+              </button>
+            </div>
+          </div>
+
+          {message && (
+            <div className="mx-auto mb-8 max-w-3xl rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-5 py-4 text-center text-sm text-white/45">
+              {message}
             </div>
           )}
 
-          {/* search */}
-          <div className="mx-auto w-full max-w-2xl flex flex-col sm:flex-row gap-3 mb-6">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Enter ZIP, City, or State"
-              className="flex-1 rounded-xl bg-white/5 ring-1 ring-white/10 px-4 py-3 placeholder:text-white/40 focus:ring-2 focus:ring-white/20 outline-none"
-            />
-            <button
-              onClick={handleSearch}
-              disabled={busy}
-              className="shrink-0 rounded-xl bg-red-600 hover:bg-red-500 px-5 py-3 font-medium transition disabled:opacity-60"
-            >
-              {busy ? "Searching…" : "Search"}
-            </button>
+          {/* 4. RESULTS */}
+          <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-5">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-white/35">
+                Nearby Locations
+              </p>
+
+              <p className="mt-2 text-sm text-white/45">{resultCountLabel}</p>
+            </div>
+
+            <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/35 sm:block">
+              35 mi radius
+            </div>
           </div>
 
-          {/* results */}
-          <div className="flex-1 overflow-y-auto space-y-5 bg-black min-h-0">
+          <div className="space-y-5">
             <AnimatePresence>
               {searched && disp.length === 0 && (
-                <motion.p
+                <motion.div
                   key="none"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="text-center text-white/60"
+                  className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 text-center"
                 >
-                  No dispensaries found in your area.
-                </motion.p>
+                  <p className="text-sm font-medium text-white">
+                    No dispensaries found in your area.
+                  </p>
+                  <p className="mt-2 text-sm text-white/40">
+                    Try another ZIP code, city, or state.
+                  </p>
+                </motion.div>
               )}
 
-              {disp.map((d) => {
-                const dist = loc && miles(loc.lat, loc.lng, d.lat, d.lng);
+              {disp.map((d) => (
+                <motion.article
+                  key={d.id}
+                  layout
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.035] p-4 shadow-[0_25px_90px_rgba(0,0,0,0.35)] transition hover:border-white/20 hover:bg-white/[0.055]"
+                >
+                  <div className="flex flex-col gap-5 md:flex-row md:items-center">
+                    <div className="h-44 w-full overflow-hidden rounded-[1.5rem] bg-white/10 md:h-36 md:w-56">
+                      <img
+                        src="/images/Stores/rickstore.jpg"
+                        alt={d.name}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
 
-                return (
-                  <motion.div
-                    key={d.id}
-                    layout
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="p-5 rounded-2xl bg-white/5 ring-1 ring-white/10"
-                  >
-                    <div className="flex flex-col md:flex-row md:items-center gap-5">
-                      <div className="w-full md:w-56 overflow-hidden rounded-xl bg-white/10 ring-1 ring-white/10">
-                        <img
-                          src="/images/Stores/rickstore.jpg"
-                          alt={d.name}
-                          className="h-40 w-full object-cover"
-                        />
-                      </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h2 className="text-2xl font-semibold tracking-[-0.05em] text-white">
+                            {d.name}
+                          </h2>
 
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between gap-4">
-                          <h2 className="text-xl font-semibold">{d.name}</h2>
-                          {typeof dist === "number" && (
-                            <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-sm text-white/80 ring-1 ring-white/15">
-                              {dist.toFixed(1)} mi
-                            </span>
-                          )}
-                        </div>
-                        <p className="mt-1 text-white/80">{d.address}</p>
-                        {d.phone && (
-                          <p className="mt-0.5 text-white/60">
-                            <a href={`tel:${d.phone}`} className="hover:text-white">
+                          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
+                            {d.address}
+                          </p>
+
+                          {d.phone && (
+                            <a
+                              href={`tel:${d.phone}`}
+                              className="mt-2 block text-sm text-white/45 transition hover:text-white"
+                            >
                               {d.phone}
                             </a>
-                          </p>
-                        )}
-                        <div className="mt-3 flex gap-3">
-                          <a
-                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                              d.address
-                            )}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="rounded-lg bg-white/10 hover:bg-white/15 px-3 py-2 text-sm ring-1 ring-white/10"
-                          >
-                            View in Maps
-                          </a>
-                          {d.website && (
-                            <a
-                              href={d.website}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="rounded-lg bg-white/10 hover:bg-white/15 px-3 py-2 text-sm ring-1 ring-white/10"
-                            >
-                              Website
-                            </a>
                           )}
                         </div>
+
+                        {typeof d.distance === "number" && (
+                          <span className="w-fit rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white/65">
+                            {d.distance.toFixed(1)} mi
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mt-5 flex flex-wrap gap-3">
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            d.address
+                          )}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-full bg-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.22em] text-black transition hover:bg-white/85"
+                        >
+                          View in Maps
+                        </a>
+
+                        {d.website && (
+                          <a
+                            href={d.website}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-[10px] font-bold uppercase tracking-[0.22em] text-white transition hover:border-white/25"
+                          >
+                            Website
+                          </a>
+                        )}
                       </div>
                     </div>
-                  </motion.div>
-                );
-              })}
+                  </div>
+                </motion.article>
+              ))}
             </AnimatePresence>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
     </LoadScript>
   );
 }

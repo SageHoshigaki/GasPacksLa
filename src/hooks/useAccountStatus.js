@@ -4,25 +4,24 @@ import { useUser } from "@clerk/clerk-react";
 import { supabase } from "../lib/supabaseClient";
 
 export const useAccountStatus = () => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [status, setStatus] = useState(null);
 
   useEffect(() => {
-    const fetchStatus = async () => {
-      const email = user?.primaryEmailAddress?.emailAddress;
-      if (!email) return;
+    if (!isLoaded || !user) return;
 
+    const fetchStatus = async () => {
       const { data, error } = await supabase
-        .from("user")
+        .from("users")           // ← was "user" (wrong table name)
         .select("status")
-        .eq("email", email)
+        .eq("id", user.id)       // ← was .eq("email", ...) — id is safer primary key
         .single();
 
-      setStatus(error ? "unknown" : data?.status);
+      setStatus(error ? "unknown" : (data?.status ?? "pending"));
     };
 
     fetchStatus();
-  }, [user]);
+  }, [user, isLoaded]);
 
   return status;
 };
